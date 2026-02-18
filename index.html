@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<!-- saved from url=(0014)about:internet -->
-<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="es">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informe de Formación v9 · Loggro</title>
-<script src="./Informe de Formación v9 · Loggro_files/chart.umd.min.js.descarga"></script>
-<script src="./Informe de Formación v9 · Loggro_files/index.js.descarga"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -72,6 +72,8 @@ body.edit-mode .edit-banner{display:block}
 .fsel:disabled{opacity:.4;cursor:not-allowed}
 #btn-clear-f{background:none;border:1.5px solid var(--g5);color:var(--dk3);padding:6px 13px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:.81rem;transition:.2s}
 #btn-clear-f:hover{border-color:var(--or);color:var(--or)}
+#btn-apply-filters{background:var(--or);border:none;color:#fff;padding:8px 20px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:.84rem;font-weight:600;transition:.2s;margin-left:8px}
+#btn-apply-filters:hover{background:var(--or-l);transform:translateY(-1px)}
 .f-badge{background:var(--or-bg);border:1px solid rgba(229,94,30,.3);color:var(--or-d);padding:4px 10px;border-radius:12px;font-size:.76rem;font-weight:600;display:none}
 .f-badge.on{display:inline-block}
 
@@ -327,7 +329,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
 </div>
 
 <!-- ── LOGIN ── -->
-<div id="login-overlay" class="">
+<div id="login-overlay">
   <div class="login-box">
     <h3>Panel de Administración</h3>
     <p>Ingresa la contraseña para acceder</p>
@@ -339,7 +341,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
 </div>
 
 <!-- ── ADMINBAR ── -->
-<div id="adminbar" class="">
+<div id="adminbar">
   <div class="abar-row">
     <span class="abar-title">⚙ Administrador</span>
     <div class="asep"></div>
@@ -352,13 +354,13 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
 
 
 <!-- ── LOADING ── -->
-<div id="loading-overlay" class=""><div class="spinner"></div><p id="loading-msg">Cargando diagnóstico Alojamientos…</p></div>
+<div id="loading-overlay"><div class="spinner"></div><p id="loading-msg">Procesando…</p></div>
 
 <!-- ── BOTÓN FLOTANTE CONFIGURACIÓN ── -->
 <button id="btn-admin-open" title="Configuración">⚙</button>
 
 <!-- ── PANEL CONFIG ── -->
-<div id="side-panel" class="">
+<div id="side-panel">
   <div class="sp-hdr">
     <h3>⚙ Configuración</h3>
     <button class="sp-close" id="btn-sp-close">✕ Cerrar</button>
@@ -369,12 +371,12 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
     <div class="sp-h4">📊 Actualizar datos de asistencias</div>
     <p class="sp-note">Carga el archivo Excel semanal de asistencias. Columnas requeridas: <strong>Fecha de Sesión, Tema / Nombre de la sesión, Nombre del asistente, Tipo de sesión, Producto</strong>.</p>
     <label class="sp-upload-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Cargar Excel de asistencias
       <input type="file" id="file-asistencias" accept=".xlsx">
     </label>
-    <div id="abar-status" class="sp-upload-status">✓ Asistencias_Maestro.xlsx — 2.161 registros</div>
-    <div id="abar-update" class="sp-upload-date">Actualizado: 18/2/2026, 9:13:24 a.&nbsp;m.</div>
+    <div id="abar-status" class="sp-upload-status">Sin datos cargados</div>
+    <div id="abar-update" class="sp-upload-date"></div>
   </div>
 
   <!-- Cargar retroalimentación -->
@@ -382,59 +384,19 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
     <div class="sp-h4">⭐ Actualizar encuestas de retroalimentación</div>
     <p class="sp-note">Archivo de encuestas de reentrenamientos. Columnas: <strong>Id, Fecha de inicio, Nombre, Producto, Sesión, calificaciones</strong>.</p>
     <label class="sp-upload-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
       Cargar Excel de retroalimentación
       <input type="file" id="file-retroalimentacion" accept=".xlsx">
     </label>
-    <div id="retro-status" class="sp-upload-status">✓ Encuesta de Retroalimentación – Sesión de Reentrenamiento.xlsx — 78 encuestas</div>
-    <div id="retro-update" class="sp-upload-date">Actualizado: 18/2/2026, 9:13:41 a.&nbsp;m.</div>
+    <div id="retro-status" class="sp-upload-status">Sin datos cargados</div>
+    <div id="retro-update" class="sp-upload-date"></div>
   </div>
 
   <!-- Cargar diagnósticos -->
   <div class="sp-sec">
     <div class="sp-h4">🎯 Actualizar diagnósticos por producto</div>
     <p class="sp-note">Columnas requeridas: <strong>Id, Fecha, Nombre, Equipo, Total de puntos</strong>.</p>
-    <div id="diag-upload-grid"><div class="duc-sp loaded">
-      <div style="flex:1">
-        <div class="duc-sp-name">Nómina</div>
-        <div class="duc-sp-status">✓ 39 registros</div>
-      </div>
-      <label class="duc-sp-upload">
-        ↑ Reemplazar
-        <input type="file" accept=".xlsx" data-prod="Nómina">
-      </label>
-      <button class="duc-sp-remove" data-prod="Nómina" title="Quitar datos">✕</button>
-      <button class="duc-sp-delete" data-prod="Nómina" title="Eliminar producto de la lista">🗑</button></div><div class="duc-sp loaded">
-      <div style="flex:1">
-        <div class="duc-sp-name">Restobar</div>
-        <div class="duc-sp-status">✓ 45 registros</div>
-      </div>
-      <label class="duc-sp-upload">
-        ↑ Reemplazar
-        <input type="file" accept=".xlsx" data-prod="Restobar">
-      </label>
-      <button class="duc-sp-remove" data-prod="Restobar" title="Quitar datos">✕</button>
-      <button class="duc-sp-delete" data-prod="Restobar" title="Eliminar producto de la lista">🗑</button></div><div class="duc-sp loaded">
-      <div style="flex:1">
-        <div class="duc-sp-name">Pymes</div>
-        <div class="duc-sp-status">✓ 41 registros</div>
-      </div>
-      <label class="duc-sp-upload">
-        ↑ Reemplazar
-        <input type="file" accept=".xlsx" data-prod="Pymes">
-      </label>
-      <button class="duc-sp-remove" data-prod="Pymes" title="Quitar datos">✕</button>
-      <button class="duc-sp-delete" data-prod="Pymes" title="Eliminar producto de la lista">🗑</button></div><div class="duc-sp loaded">
-      <div style="flex:1">
-        <div class="duc-sp-name">Alojamientos</div>
-        <div class="duc-sp-status">✓ 5 registros</div>
-      </div>
-      <label class="duc-sp-upload">
-        ↑ Reemplazar
-        <input type="file" accept=".xlsx" data-prod="Alojamientos">
-      </label>
-      <button class="duc-sp-remove" data-prod="Alojamientos" title="Quitar datos">✕</button>
-      <button class="duc-sp-delete" data-prod="Alojamientos" title="Eliminar producto de la lista">🗑</button></div></div>
+    <div id="diag-upload-grid"></div>
     <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
       <input class="sp-inp" id="new-diag-product" placeholder="Nuevo producto…" style="flex:1;min-width:140px;margin-bottom:0">
       <button class="sp-btn" id="btn-add-diag-product">+ Agregar</button>
@@ -444,7 +406,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
   <!-- Formadoras -->
   <div class="sp-sec">
     <div class="sp-h4">Personas excluidas del análisis</div>
-    <div id="formadoras-list"><div class="fitem"><span>Johana Valencia Cardona</span><button onclick="rmFormadora(0)">×</button></div><div class="fitem"><span>Karolay Castaño Bedoya</span><button onclick="rmFormadora(1)">×</button></div><div class="fitem"><span>Katherine Paola Reyes Mieles</span><button onclick="rmFormadora(2)">×</button></div></div>
+    <div id="formadoras-list"></div>
     <input class="sp-inp" id="nueva-formadora" placeholder="Nombre exacto a excluir…">
     <button class="sp-btn" id="btn-add-formadora">+ Agregar</button>
   </div>
@@ -462,7 +424,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
   <div class="sp-sec">
     <div class="sp-h4">Descripción de productos</div>
     <p class="sp-note">Agrega texto explicativo que aparece bajo cada producto en el informe.</p>
-    <div id="prod-texts-list"><div class="prod-txt-item"><div class="pt-name">Alojamientos</div><textarea class="sp-ta" data-prod="Alojamientos" placeholder="Descripción o nota explicativa…"></textarea></div><div class="prod-txt-item"><div class="pt-name">Conoce nuestros productos (Todos)</div><textarea class="sp-ta" data-prod="Conoce nuestros productos (Todos)" placeholder="Descripción o nota explicativa…">Onboarding para nuevos colaboradores, con visión general del portafolio Loggro.</textarea></div><div class="prod-txt-item"><div class="pt-name">Generales</div><textarea class="sp-ta" data-prod="Generales" placeholder="Descripción o nota explicativa…">Procesos y herramientas transversales de la operación.</textarea></div><div class="prod-txt-item"><div class="pt-name">Integración Alojamientos - Pymes</div><textarea class="sp-ta" data-prod="Integración Alojamientos - Pymes" placeholder="Descripción o nota explicativa…"></textarea></div><div class="prod-txt-item"><div class="pt-name">Integración Pymes - Alojamientos</div><textarea class="sp-ta" data-prod="Integración Pymes - Alojamientos" placeholder="Descripción o nota explicativa…"></textarea></div><div class="prod-txt-item"><div class="pt-name">Integración Restobar - Pymes</div><textarea class="sp-ta" data-prod="Integración Restobar - Pymes" placeholder="Descripción o nota explicativa…"></textarea></div><div class="prod-txt-item"><div class="pt-name">Nómina</div><textarea class="sp-ta" data-prod="Nómina" placeholder="Descripción o nota explicativa…"></textarea></div><div class="prod-txt-item"><div class="pt-name">Pymes</div><textarea class="sp-ta" data-prod="Pymes" placeholder="Descripción o nota explicativa…"></textarea></div><div class="prod-txt-item"><div class="pt-name">Restobar</div><textarea class="sp-ta" data-prod="Restobar" placeholder="Descripción o nota explicativa…"></textarea></div><div class="prod-txt-item"><div class="pt-name">Restobar - POS Tienda</div><textarea class="sp-ta" data-prod="Restobar - POS Tienda" placeholder="Descripción o nota explicativa…"></textarea></div></div>
+    <div id="prod-texts-list"></div>
   </div>
 
   <!-- Contraseña -->
@@ -487,17 +449,18 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
 <div class="page-wrapper" id="page-wrapper">
 
   <!-- ── FILTROS PÚBLICOS ── -->
-  <div id="filterbar" class="visible">
+  <div id="filterbar">
     <span class="flbl">Filtrar:</span>
-    <select class="fsel" id="f-year"><option value="">Todos los años</option><option value="2025">2025</option><option value="2026">2026</option></select>
-    <select class="fsel" id="f-desde"><option value="">Desde…</option><option value="2026-01">Ene 2026</option><option value="2026-02">Feb 2026</option></select>
+    <select class="fsel" id="f-year"><option value="">Todos los años</option></select>
+    <select class="fsel" id="f-desde"><option value="">Desde…</option></select>
     <span style="color:var(--dk3);font-size:.85rem">→</span>
-    <select class="fsel" id="f-hasta"><option value="">Hasta…</option><option value="2026-01">Ene 2026</option><option value="2026-02">Feb 2026</option></select>
-    <select class="fsel" id="f-tipo" style=""><option value="">Todos los tipos</option><option value="Formación inicial Servicio al Cliente - Implementación">Formación inicial Servicio al Cliente - Implementación</option><option value="Formación inicial otras áreas">Formación inicial otras áreas</option><option value="Profundización otras áreas">Profundización otras áreas</option><option value="Reentrenamiento">Reentrenamiento</option></select>
-    <select class="fsel" id="f-producto" style=""><option value="">Todos los productos</option><option value="Alojamientos">Alojamientos</option><option value="Conoce nuestros productos (Todos)">Conoce nuestros productos (Todos)</option><option value="Generales">Generales</option><option value="Integración Alojamientos - Pymes">Integración Alojamientos - Pymes</option><option value="Integración Pymes - Alojamientos">Integración Pymes - Alojamientos</option><option value="Integración Restobar - Pymes">Integración Restobar - Pymes</option><option value="Nómina">Nómina</option><option value="Pymes">Pymes</option><option value="Restobar">Restobar</option><option value="Restobar - POS Tienda">Restobar - POS Tienda</option></select>
-    <select class="fsel" id="f-participante" style=""><option value="">Todos los participantes</option><option value="Adrian Montoya Calle">Adrian Montoya Calle</option><option value="Adriana Lucia Mendoza Mendoza">Adriana Lucia Mendoza Mendoza</option><option value="Alberto Ramon Anaya Pitalua">Alberto Ramon Anaya Pitalua</option><option value="Alejandra Rodriguez Montoya">Alejandra Rodriguez Montoya</option><option value="Alejandra Torres Henao">Alejandra Torres Henao</option><option value="Alejandro Perez Gomez">Alejandro Perez Gomez</option><option value="Alexandra Maireth Villa Guerra">Alexandra Maireth Villa Guerra</option><option value="Ana Maria Acevedo Tangarife">Ana Maria Acevedo Tangarife</option><option value="Ana Maria Roldan Ospina">Ana Maria Roldan Ospina</option><option value="Ana Orrego Parra">Ana Orrego Parra</option><option value="Angela Bustamante Restrepo">Angela Bustamante Restrepo</option><option value="Angie Paola Casallas Ortiz">Angie Paola Casallas Ortiz</option><option value="Angie Yulieth Garcia Redondo">Angie Yulieth Garcia Redondo</option><option value="Anyela Yeniffer Florez Melo">Anyela Yeniffer Florez Melo</option><option value="Anyi Suley Neiza Diaz">Anyi Suley Neiza Diaz</option><option value="Belkys Ortega Montenegro">Belkys Ortega Montenegro</option><option value="Brigitte Paola Rodriguez Barrios">Brigitte Paola Rodriguez Barrios</option><option value="Capacitaciones">Capacitaciones</option><option value="Carlos Andres Gutierrez Gomez">Carlos Andres Gutierrez Gomez</option><option value="Carlos Arturo Dominguez Gomez">Carlos Arturo Dominguez Gomez</option><option value="Caroll Yulieth Contreras Rico">Caroll Yulieth Contreras Rico</option><option value="Claudia Emilce Vargas Cancino">Claudia Emilce Vargas Cancino</option><option value="Cristian Alexander Pineda Socha">Cristian Alexander Pineda Socha</option><option value="Daniel Alberto Olier Diaz">Daniel Alberto Olier Diaz</option><option value="Daniel David Ortega Rico">Daniel David Ortega Rico</option><option value="Derly Yurani Fernandez Leon">Derly Yurani Fernandez Leon</option><option value="Diana Maria Giraldo Jimenez">Diana Maria Giraldo Jimenez</option><option value="Diana Mileidy Bernal Yanez">Diana Mileidy Bernal Yanez</option><option value="Diana Milena Zarate Beltran">Diana Milena Zarate Beltran</option><option value="Diana Patricia Diaz Ramirez">Diana Patricia Diaz Ramirez</option><option value="Diana Patricia Palacios Cortes">Diana Patricia Palacios Cortes</option><option value="Diana Rocio Rincon Joya">Diana Rocio Rincon Joya</option><option value="Diego Mauricio Vasquez Tangarife">Diego Mauricio Vasquez Tangarife</option><option value="Eduar Ferney Benavides Salgado">Eduar Ferney Benavides Salgado</option><option value="Eduardo Morillo Alcala">Eduardo Morillo Alcala</option><option value="Elizabeth Marcela Rodriguez Garzon">Elizabeth Marcela Rodriguez Garzon</option><option value="Eloy Jesús Lopez Meza">Eloy Jesús Lopez Meza</option><option value="FERNANDO VALENCIA (No comprobado)">FERNANDO VALENCIA (No comprobado)</option><option value="Fernando Valencia  (No comprobado)">Fernando Valencia  (No comprobado)</option><option value="Fernando Valencia (No comprobado)">Fernando Valencia (No comprobado)</option><option value="Fernanfo Valencia  (No comprobado)">Fernanfo Valencia  (No comprobado)</option><option value="Gadiel Esteban Villalba Gaitan">Gadiel Esteban Villalba Gaitan</option><option value="Giseth Salazar Hernandez">Giseth Salazar Hernandez</option><option value="Gladis del Carmen Reyes Baron">Gladis del Carmen Reyes Baron</option><option value="Gregorio Aristizabal Escobar">Gregorio Aristizabal Escobar</option><option value="Harold Mondragon Jaramillo">Harold Mondragon Jaramillo</option><option value="Ingrys Tuberquia Lugo">Ingrys Tuberquia Lugo</option><option value="Isabel Cristina Monsalve Velasquez">Isabel Cristina Monsalve Velasquez</option><option value="Isabel Yasmid Munoz Isaza">Isabel Yasmid Munoz Isaza</option><option value="Jackeline Caldas Acero">Jackeline Caldas Acero</option><option value="Jenniffer Castillo Chavarro">Jenniffer Castillo Chavarro</option><option value="Jerónimo Junior Yaya Bolívar">Jerónimo Junior Yaya Bolívar</option><option value="Joan David Zapata Rios">Joan David Zapata Rios</option><option value="Johanna Cassiani Caro">Johanna Cassiani Caro</option><option value="John Fredy Gallego Herrera">John Fredy Gallego Herrera</option><option value="John Smith Ovalle Gonzalez">John Smith Ovalle Gonzalez</option><option value="Jonathan Camilo González Cortes">Jonathan Camilo González Cortes</option><option value="Jose Andres Oliveros Echeverry">Jose Andres Oliveros Echeverry</option><option value="Jose Eber Guzman Londono">Jose Eber Guzman Londono</option><option value="Jose Fernando Munoz Alvarez">Jose Fernando Munoz Alvarez</option><option value="Juan David Castillo">Juan David Castillo</option><option value="Juan Felipe Vasquez Cartagena">Juan Felipe Vasquez Cartagena</option><option value="Juan Pablo Franco Gomez">Juan Pablo Franco Gomez</option><option value="Juan Pablo Gallego Gaona">Juan Pablo Gallego Gaona</option><option value="Juan Pablo Ortiz Oquendo">Juan Pablo Ortiz Oquendo</option><option value="Juanita Gomez Jaramillo">Juanita Gomez Jaramillo</option><option value="Karen Dahyan Quintero Bonilla">Karen Dahyan Quintero Bonilla</option><option value="Karen Dayana Montalvo Zapata">Karen Dayana Montalvo Zapata</option><option value="Katherine Barrientos Miranda">Katherine Barrientos Miranda</option><option value="Katherine Paola Reyes Mieles">Katherine Paola Reyes Mieles</option><option value="Kathy Elizabeth Porras Eslava">Kathy Elizabeth Porras Eslava</option><option value="Katteryn Cecilia Portela Yanez">Katteryn Cecilia Portela Yanez</option><option value="Kelly Vanessa Valencia Bedoya">Kelly Vanessa Valencia Bedoya</option><option value="Kevin Andres Arrieta Reyes">Kevin Andres Arrieta Reyes</option><option value="Kevin Felipe Mendoza Giraldo">Kevin Felipe Mendoza Giraldo</option><option value="Kissy Carolina Marín Galeano">Kissy Carolina Marín Galeano</option><option value="Laura Camila Velez Rivera">Laura Camila Velez Rivera</option><option value="Ledis Tatiana Ledesma Tuiran">Ledis Tatiana Ledesma Tuiran</option><option value="Leidy Johana Garcia Rivera">Leidy Johana Garcia Rivera</option><option value="Leidy Johana Guerra Betancur">Leidy Johana Guerra Betancur</option><option value="Leidy Marcela Bernal Meza">Leidy Marcela Bernal Meza</option><option value="Leidy Viviana Lara Montaño">Leidy Viviana Lara Montaño</option><option value="Leydi Johanna Ruiz Garcia">Leydi Johanna Ruiz Garcia</option><option value="Lina Marcela Ruiz Alvarez">Lina Marcela Ruiz Alvarez</option><option value="Lisseth Andrea Graciano Cifuentes">Lisseth Andrea Graciano Cifuentes</option><option value="Luis Arturo Nunez Hernandez">Luis Arturo Nunez Hernandez</option><option value="Luisa Fernanda Arenas Ruiz">Luisa Fernanda Arenas Ruiz</option><option value="Luisa Fernanda Mejia Trujillo">Luisa Fernanda Mejia Trujillo</option><option value="Mabel Johanna Villa Hernandez">Mabel Johanna Villa Hernandez</option><option value="Maite Viviana Gutierrez Hernandez">Maite Viviana Gutierrez Hernandez</option><option value="Manuela Muñoz Isaza">Manuela Muñoz Isaza</option><option value="Manuela Vasquez Rojas">Manuela Vasquez Rojas</option><option value="Manuela Zamudio Agudelo">Manuela Zamudio Agudelo</option><option value="Marcela Alexandra Arias Echavarria">Marcela Alexandra Arias Echavarria</option><option value="Maria Camila Rodriguez Von Buchwald">Maria Camila Rodriguez Von Buchwald</option><option value="Maria Enid Restrepo Restrepo">Maria Enid Restrepo Restrepo</option><option value="Maria Jose Araque Jaramillo">Maria Jose Araque Jaramillo</option><option value="Maria Natalia Arbelaez Valencia">Maria Natalia Arbelaez Valencia</option><option value="Maria Paula Solano Llanes">Maria Paula Solano Llanes</option><option value="Marleny Arroyave Norena">Marleny Arroyave Norena</option><option value="Mary Alejandra Hernandez Leon">Mary Alejandra Hernandez Leon</option><option value="Mateo Del Rio Usma">Mateo Del Rio Usma</option><option value="Mayda Montserrat Rodriguez de la Hoz">Mayda Montserrat Rodriguez de la Hoz</option><option value="Mayerly Andrea Vanegas Molina">Mayerly Andrea Vanegas Molina</option><option value="Melanie Paola Gonzalez Rodriguez">Melanie Paola Gonzalez Rodriguez</option><option value="Merly Astrid Valles Daris">Merly Astrid Valles Daris</option><option value="Monica Estefania Murillo Espitia">Monica Estefania Murillo Espitia</option><option value="Nancy Andrea Bolívar Zapata">Nancy Andrea Bolívar Zapata</option><option value="Natalia Naranjo Buitrago">Natalia Naranjo Buitrago</option><option value="Nelfi Yamile Moreno Moreno">Nelfi Yamile Moreno Moreno</option><option value="Nestor Eduardo Fajardo Rodriguez">Nestor Eduardo Fajardo Rodriguez</option><option value="Nidia Esther Muñiz Pereira">Nidia Esther Muñiz Pereira</option><option value="Paola Andrea Caballero Pedraza">Paola Andrea Caballero Pedraza</option><option value="Paola Fernanda Garcia Uzuriaga">Paola Fernanda Garcia Uzuriaga</option><option value="Pedro Julián Badillo Gómez">Pedro Julián Badillo Gómez</option><option value="Sandra Liseth Bernal">Sandra Liseth Bernal</option><option value="Santiago Gutiérrez Villada">Santiago Gutiérrez Villada</option><option value="Sara Daniela Murillo Tangarife">Sara Daniela Murillo Tangarife</option><option value="Sidney Grey Watson Salcedo">Sidney Grey Watson Salcedo</option><option value="Sofia Morales Posada">Sofia Morales Posada</option><option value="Sol Jhanet Quiceno Cano">Sol Jhanet Quiceno Cano</option><option value="Sulma Carolina Landinez Alvarado">Sulma Carolina Landinez Alvarado</option><option value="Tatiana Hoyos Bustamante">Tatiana Hoyos Bustamante</option><option value="Tatiana Patricia Mazo Tabares">Tatiana Patricia Mazo Tabares</option><option value="Valentina Avila Ramirez">Valentina Avila Ramirez</option><option value="Wendy Natalia Macana Prada">Wendy Natalia Macana Prada</option><option value="Yackelin Vanessa Jaimes Gonzalez">Yackelin Vanessa Jaimes Gonzalez</option><option value="Yeimi Marcela Moreno Hernande">Yeimi Marcela Moreno Hernande</option><option value="Yenny Katheryne Pamplona Olaya">Yenny Katheryne Pamplona Olaya</option><option value="Yeny Lizeth Espinosa Martinez">Yeny Lizeth Espinosa Martinez</option><option value="Yesid Jesus Sanchez Cantillo">Yesid Jesus Sanchez Cantillo</option><option value="Yuli Vannesa Guerrero Ocampo">Yuli Vannesa Guerrero Ocampo</option><option value="Zulli Tatiana Silva Rodriguez">Zulli Tatiana Silva Rodriguez</option><option value="read.ai meeting notes (No comprobado)">read.ai meeting notes (No comprobado)</option></select>
+    <select class="fsel" id="f-hasta"><option value="">Hasta…</option></select>
+    <select class="fsel" id="f-tipo" style="display:none"><option value="">Todos los tipos</option></select>
+    <select class="fsel" id="f-producto" style="display:none"><option value="">Todos los productos</option></select>
+    <select class="fsel" id="f-participante" style="display:none"><option value="">Todos los participantes</option></select>
     <button id="btn-clear-f">✕ Limpiar</button>
-    <span class="f-badge on" id="f-badge">1 filtro activo</span>
+  <button id="btn-apply-filters">🔍 Buscar</button>
+    <span class="f-badge" id="f-badge">Filtro activo</span>
   </div>
 
   <!-- ════════════ TAB 1: ASISTENCIAS ════════════ -->
@@ -508,9 +471,9 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <h1 id="hero-titulo" contenteditable="false">Informe de <em>Formación</em></h1>
       <p class="hero-desc" id="hero-subtitulo" contenteditable="false">Análisis de desempeño, participación y tendencias del equipo de capacitación.</p>
       <div class="hero-pills">
-        <div class="hero-pill">📅 <strong id="period-display">11/01/2025 — 03/02/2026</strong></div>
-        <div class="hero-pill" id="pill-meses" style="">⏱ <strong id="duration-display">14 meses</strong></div>
-        <span class="fchip on" id="fchip">🔍 <span id="fchip-text">Año: 2026</span></span>
+        <div class="hero-pill">📅 <strong id="period-display">—</strong></div>
+        <div class="hero-pill" id="pill-meses" style="display:none">⏱ <strong id="duration-display"></strong></div>
+        <span class="fchip" id="fchip">🔍 <span id="fchip-text"></span></span>
       </div>
     </div>
 
@@ -533,31 +496,31 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <div class="kpi-card">
         <span class="kpi-tooltip">Número total de veces que un colaborador asistió a una sesión de formación en el período seleccionado.</span>
         <span class="kpi-icon">📊</span>
-        <div class="kpi-val" id="kpi-asistencias">194</div>
+        <div class="kpi-val" id="kpi-asistencias">—</div>
         <div class="kpi-lbl">Asistencias totales</div>
       </div>
       <div class="kpi-card">
         <span class="kpi-tooltip">Cantidad de colaboradores distintos que asistieron al menos a una sesión en el período. Excluye a las formadoras.</span>
         <span class="kpi-icon">👥</span>
-        <div class="kpi-val" id="kpi-participantes">32</div>
+        <div class="kpi-val" id="kpi-participantes">—</div>
         <div class="kpi-lbl">Participantes activos</div>
       </div>
       <div class="kpi-card">
         <span class="kpi-tooltip">Número de sesiones de formación distintas realizadas. Una misma sesión puede tener múltiples asistentes.</span>
         <span class="kpi-icon">🎓</span>
-        <div class="kpi-val" id="kpi-sesiones">72</div>
+        <div class="kpi-val" id="kpi-sesiones">—</div>
         <div class="kpi-lbl">Sesiones únicas</div>
       </div>
       <div class="kpi-card">
         <span class="kpi-tooltip">Promedio de participantes por sesión. Se calcula dividiendo las asistencias totales entre las sesiones únicas.</span>
         <span class="kpi-icon">⚡</span>
-        <div class="kpi-val" id="kpi-promedio">2.7</div>
+        <div class="kpi-val" id="kpi-promedio">—</div>
         <div class="kpi-lbl">Promedio por sesión</div>
       </div>
       <div class="kpi-card">
         <span class="kpi-tooltip">Número de líneas de producto distintas que tuvieron al menos una sesión de formación en el período.</span>
         <span class="kpi-icon">📦</span>
-        <div class="kpi-val" id="kpi-productos">6</div>
+        <div class="kpi-val" id="kpi-productos">—</div>
         <div class="kpi-lbl">Productos cubiertos</div>
       </div>
     </div>
@@ -565,11 +528,11 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
     <div class="section">
       <div class="sec-label">Análisis temporal</div>
       <h2>Evolución Mensual de Asistencias</h2>
-      <div class="chart-wrap"><canvas id="chart-mensual" style="box-sizing: border-box; display: block; height: 320px; width: 1135px;" width="1589" height="447"></canvas></div>
+      <div class="chart-wrap"><canvas id="chart-mensual"></canvas></div>
       <div class="insights">
-        <div class="insight"><h4>📈 Tendencia general</h4><p id="ins-tendencia">Durante 2 meses se registró un promedio de <strong>97 asistencias mensuales</strong>. Esto representa el nivel base de actividad formativa.</p></div>
-        <div class="insight"><h4>🏔 Pico de actividad</h4><p id="ins-pico"><strong>2026-01</strong> fue el mes más activo con <strong>165 asistencias</strong>. Esto puede indicar períodos de inducción masiva o campañas de capacitación intensiva.</p></div>
-        <div class="insight"><h4>📉 Menor actividad</h4><p id="ins-valle"><strong>2026-02</strong> registró la menor actividad con <strong>29 asistencias</strong>. Identifica períodos de baja demanda o estacionalidad en la formación.</p></div>
+        <div class="insight"><h4>📈 Tendencia general</h4><p id="ins-tendencia">Carga el archivo Excel para ver el análisis.</p></div>
+        <div class="insight"><h4>🏔 Pico de actividad</h4><p id="ins-pico">—</p></div>
+        <div class="insight"><h4>📉 Menor actividad</h4><p id="ins-valle">—</p></div>
       </div>
     </div>
 
@@ -598,11 +561,11 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       </div>
       
       <div class="tipo-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
-        <div class="chart-wrap" style="margin:0"><canvas id="chart-tipo" style="box-sizing: border-box; display: block; height: 320px; width: 536px;" width="750" height="447"></canvas></div>
+        <div class="chart-wrap" style="margin:0"><canvas id="chart-tipo"></canvas></div>
         <div style="overflow-x:auto">
           <table class="tipo-table" id="tabla-tipo">
             <thead><tr><th>Modalidad</th><th>Ses.</th><th>%</th><th>Prom.</th><th>Nivel</th></tr></thead>
-            <tbody><tr><td><strong>Formación inicial otras áreas</strong></td><td>42</td><td><strong>58.3%</strong></td><td>1.7</td><td><span class="badge badge-bajo">Baja</span></td></tr><tr><td><strong>Formación inicial Servicio al Cliente - Implementación</strong></td><td>23</td><td><strong>31.9%</strong></td><td>4.4</td><td><span class="badge badge-alto">Alta</span></td></tr><tr><td><strong>Profundización otras áreas</strong></td><td>7</td><td><strong>9.7%</strong></td><td>2.9</td><td><span class="badge badge-medio">Media</span></td></tr></tbody>
+            <tbody></tbody>
           </table>
         </div>
       </div>
@@ -611,22 +574,22 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
     <div class="section">
       <div class="sec-label">Cobertura por línea</div>
       <h2>Distribución por Producto</h2>
-      <div class="chart-wrap"><canvas id="chart-producto" style="box-sizing: border-box; display: block; height: 320px; width: 1135px;" width="1589" height="447"></canvas></div>
-      <div class="prod-grid" id="prod-cards"><div class="prod-card"><div class="pc-top"><span class="pc-name">Pymes</span><span class="pc-pct">43.1%</span></div><div class="pc-bar-bg"><div class="pc-bar-fill" style="width:100%"></div></div><p class="pc-meta">31 sesiones</p></div><div class="prod-card"><div class="pc-top"><span class="pc-name">Restobar</span><span class="pc-pct">23.6%</span></div><div class="pc-bar-bg"><div class="pc-bar-fill" style="width:55%"></div></div><p class="pc-meta">17 sesiones</p></div><div class="prod-card"><div class="pc-top"><span class="pc-name">Nómina</span><span class="pc-pct">15.3%</span></div><div class="pc-bar-bg"><div class="pc-bar-fill" style="width:35%"></div></div><p class="pc-meta">11 sesiones</p></div><div class="prod-card"><div class="pc-top"><span class="pc-name">Alojamientos</span><span class="pc-pct">9.7%</span></div><div class="pc-bar-bg"><div class="pc-bar-fill" style="width:23%"></div></div><p class="pc-meta">7 sesiones</p></div><div class="prod-card"><div class="pc-top"><span class="pc-name">Conoce nuestros productos (Todos)</span><span class="pc-pct">5.6%</span></div><div class="pc-bar-bg"><div class="pc-bar-fill" style="width:13%"></div></div><p class="pc-desc">Onboarding para nuevos colaboradores, con visión general del portafolio Loggro.</p><p class="pc-meta">4 sesiones</p></div><div class="prod-card"><div class="pc-top"><span class="pc-name">Generales</span><span class="pc-pct">2.8%</span></div><div class="pc-bar-bg"><div class="pc-bar-fill" style="width:6%"></div></div><p class="pc-desc">Procesos y herramientas transversales de la operación.</p><p class="pc-meta">2 sesiones</p></div></div>
+      <div class="chart-wrap"><canvas id="chart-producto"></canvas></div>
+      <div class="prod-grid" id="prod-cards"></div>
     </div>
 
     <div class="section">
       <div class="sec-label">Compromiso individual</div>
       <h2>Top 10 Participantes</h2>
       <p style="color:var(--dk3);margin-bottom:20px;font-size:.9rem">Colaboradores con mayor número de asistencias en el período.</p>
-      <ul class="ranking" id="ranking-participantes"><li><span class="rank-num top3">#1</span><span class="rank-name">Natalia Naranjo Buitrago</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:100%"></div></div></div><span class="rank-val">21</span></li><li><span class="rank-num top3">#2</span><span class="rank-name">Cristian Alexander Pineda Socha</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:100%"></div></div></div><span class="rank-val">21</span></li><li><span class="rank-num top3">#3</span><span class="rank-name">Sulma Carolina Landinez Alvarado</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:100%"></div></div></div><span class="rank-val">21</span></li><li><span class="rank-num ">#4</span><span class="rank-name">Melanie Paola Gonzalez Rodriguez</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:100%"></div></div></div><span class="rank-val">21</span></li><li><span class="rank-num ">#5</span><span class="rank-name">Katherine Paola Reyes Mieles</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:86%"></div></div></div><span class="rank-val">18</span></li><li><span class="rank-num ">#6</span><span class="rank-name">Mayda Montserrat Rodriguez de la Hoz</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:86%"></div></div></div><span class="rank-val">18</span></li><li><span class="rank-num ">#7</span><span class="rank-name">Juanita Gomez Jaramillo</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:81%"></div></div></div><span class="rank-val">17</span></li><li><span class="rank-num ">#8</span><span class="rank-name">Fernando Valencia  (No comprobado)</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:38%"></div></div></div><span class="rank-val">8</span></li><li><span class="rank-num ">#9</span><span class="rank-name">Ledis Tatiana Ledesma Tuiran</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:24%"></div></div></div><span class="rank-val">5</span></li><li><span class="rank-num ">#10</span><span class="rank-name">Katteryn Cecilia Portela Yanez</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:24%"></div></div></div><span class="rank-val">5</span></li></ul>
+      <ul class="ranking" id="ranking-participantes"></ul>
     </div>
 
     <div class="section">
       <div class="sec-label">Sesiones destacadas</div>
       <h2>Sesiones con Mayor Convocatoria</h2>
       <p style="color:var(--dk3);margin-bottom:20px;font-size:.9rem">Las 10 sesiones que reunieron más participantes.</p>
-      <ul class="ranking" id="ranking-sesiones"><li><span class="rank-num top3">#1</span><span class="rank-name">Capacitación Intercom 1-23-26 </span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:100%"></div></div></div><span class="rank-val">8</span></li><li><span class="rank-num top3">#2</span><span class="rank-name">Profundización Loggro Alojamientos 2-03-26 </span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:88%"></div></div></div><span class="rank-val">7</span></li><li><span class="rank-num top3">#3</span><span class="rank-name">Entrenamiento productos Loggro 1-23-26 </span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:63%"></div></div></div><span class="rank-val">5</span></li><li><span class="rank-num ">#4</span><span class="rank-name">Entrenamiento productos Loggro 1-26-26</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:63%"></div></div></div><span class="rank-val">5</span></li><li><span class="rank-num ">#5</span><span class="rank-name">Entrenamiento productos Loggro 1-27-26 (3)</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:63%"></div></div></div><span class="rank-val">5</span></li><li><span class="rank-num ">#6</span><span class="rank-name">Entrenamiento productos Loggro 1-27-26</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:63%"></div></div></div><span class="rank-val">5</span></li><li><span class="rank-num ">#7</span><span class="rank-name">Entrenamiento productos Loggro 1-27-26 (2)</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:63%"></div></div></div><span class="rank-val">5</span></li><li><span class="rank-num ">#8</span><span class="rank-name">Entrenamiento productos Loggro 1-27-26 (1)</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:63%"></div></div></div><span class="rank-val">5</span></li><li><span class="rank-num ">#9</span><span class="rank-name">Entrenamiento productos Loggro 1-28-26 (2)</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:63%"></div></div></div><span class="rank-val">5</span></li><li><span class="rank-num ">#10</span><span class="rank-name">Entrenamiento productos Loggro 1-28-26 (1)</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:63%"></div></div></div><span class="rank-val">5</span></li></ul>
+      <ul class="ranking" id="ranking-sesiones"></ul>
     </div>
 
     <div class="recs-section" id="recs-section">
@@ -642,7 +605,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
     <div class="footer">
       <p><strong id="footer-area" contenteditable="false">Área de Formación</strong></p>
       <p id="footer-nota" contenteditable="false" style="margin-top:4px">Informe generado a partir de los registros de asistencia del equipo.</p>
-      <p id="footer-fecha" style="margin-top:8px;opacity:.5;font-size:.77rem">Generado el 18 de febrero de 2026</p>
+      <p id="footer-fecha" style="margin-top:8px;opacity:.5;font-size:.77rem"></p>
     </div>
   </div><!-- /tab-asistencias -->
 
@@ -658,8 +621,12 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
     <!-- Controles de visualización -->
     <div class="diag-controls" id="diag-controls">
       <label>Ver resultados de:</label>
-      <select id="diag-sel-prod"><option value="">— Selecciona un producto —</option><option value="Nómina">Nómina</option><option value="Restobar">Restobar</option><option value="Pymes">Pymes</option><option value="Alojamientos">Alojamientos</option></select>
-      <select id="diag-sel-equipo"><option value="">Todos los equipos</option><option value="Implementación">Implementación</option><option value="Servicio al cliente">Servicio al cliente</option></select>
+      <select id="diag-sel-prod">
+        <option value="">— Selecciona un producto —</option>
+      </select>
+      <select id="diag-sel-equipo">
+        <option value="">Todos los equipos</option>
+      </select>
       <select id="diag-sel-intento">
         <option value="ultimo">Último intento por persona</option>
         <option value="primero">Primer intento por persona</option>
@@ -670,11 +637,11 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
 
     <!-- KPIs diagnóstico -->
     <div class="diag-kpi">
-      <div class="dkpi-card"><span class="dkpi-icon">👤</span><div class="dkpi-val" id="dkpi-total">5</div><div class="dkpi-lbl">Evaluados</div></div>
-      <div class="dkpi-card"><span class="dkpi-icon">⭐</span><div class="dkpi-val good" id="dkpi-prom">88.6</div><div class="dkpi-lbl">Promedio</div></div>
-      <div class="dkpi-card"><span class="dkpi-icon">🏆</span><div class="dkpi-val" id="dkpi-max">94.5</div><div class="dkpi-lbl">Puntaje más alto</div></div>
-      <div class="dkpi-card"><span class="dkpi-icon">⚠️</span><div class="dkpi-val" id="dkpi-min">82</div><div class="dkpi-lbl">Puntaje más bajo</div></div>
-      <div class="dkpi-card"><span class="dkpi-icon">✅</span><div class="dkpi-val good" id="dkpi-aprobados">5/5</div><div class="dkpi-lbl">≥ 60 puntos</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">👤</span><div class="dkpi-val" id="dkpi-total">—</div><div class="dkpi-lbl">Evaluados</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">⭐</span><div class="dkpi-val" id="dkpi-prom">—</div><div class="dkpi-lbl">Promedio</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">🏆</span><div class="dkpi-val" id="dkpi-max">—</div><div class="dkpi-lbl">Puntaje más alto</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">⚠️</span><div class="dkpi-val" id="dkpi-min">—</div><div class="dkpi-lbl">Puntaje más bajo</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">✅</span><div class="dkpi-val" id="dkpi-aprobados">—</div><div class="dkpi-lbl">≥ 60 puntos</div></div>
     </div>
 
     <!-- Gráfica de distribución -->
@@ -682,8 +649,8 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <div class="sec-label">Distribución de resultados</div>
       <h2 id="diag-chart-title">Distribución de Puntajes</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px" id="diag-charts-grid">
-        <div class="chart-wrap" style="margin:0"><canvas id="chart-diag-dist" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div>
-        <div class="chart-wrap" style="margin:0"><canvas id="chart-diag-equipo" style="box-sizing: border-box; display: block; height: 0px; width: 0px;" width="0" height="0"></canvas></div>
+        <div class="chart-wrap" style="margin:0"><canvas id="chart-diag-dist"></canvas></div>
+        <div class="chart-wrap" style="margin:0"><canvas id="chart-diag-equipo"></canvas></div>
       </div>
     </div>
 
@@ -693,11 +660,11 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <h2 id="diag-table-title">Resultados por Colaborador</h2>
       <div class="diag-table-wrap">
         <table class="diag-table" id="diag-table">
-          <thead id="diag-thead"><tr><th>#</th><th>Nombre</th><th>Equipo</th><th>Fecha</th><th>Puntaje</th></tr></thead>
-          <tbody id="diag-tbody"><tr><td>1</td><td>Joan David Zapata Rios</td><td>Servicio al cliente</td><td>—</td><td><span class="score-pill score-high">94.5</span></td></tr><tr><td>2</td><td>Carlos Arturo Dominguez Gomez</td><td>Servicio al cliente</td><td>—</td><td><span class="score-pill score-high">94.5</span></td></tr><tr><td>3</td><td>Pedro Julian Badillo Gomez</td><td>Servicio al cliente</td><td>—</td><td><span class="score-pill score-high">87</span></td></tr><tr><td>4</td><td>Zulli Tatiana Silva Rodriguez</td><td>Servicio al cliente</td><td>—</td><td><span class="score-pill score-high">85</span></td></tr><tr><td>5</td><td>Maite Viviana Gutierrez Hernandez</td><td>Implementación</td><td>—</td><td><span class="score-pill score-high">82</span></td></tr></tbody>
+          <thead id="diag-thead"></thead>
+          <tbody id="diag-tbody"></tbody>
         </table>
       </div>
-      <div class="empty-state" id="diag-empty" style="display: none;">
+      <div class="empty-state" id="diag-empty">
         <span class="es-icon">🎯</span>
         <h3>Sin datos de diagnóstico</h3>
         <p>Selecciona un producto y carga su archivo Excel de diagnósticos para ver los resultados.<br>Accede como administrador para cargar archivos.</p>
@@ -706,7 +673,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
 
     <div class="footer">
       <p><strong>Área de Formación</strong> · Diagnósticos por producto</p>
-      <p style="margin-top:8px;opacity:.5;font-size:.77rem" id="diag-footer-fecha">Actualizado el 18 de febrero de 2026</p>
+      <p style="margin-top:8px;opacity:.5;font-size:.77rem" id="diag-footer-fecha"></p>
     </div>
   </div><!-- /tab-diagnosticos -->
 
@@ -718,25 +685,29 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <h1>Retroalimentación de <em>Reentrenamientos</em></h1>
       <p class="hero-desc">Análisis de satisfacción y percepción de calidad en sesiones de reentrenamiento por producto.</p>
       <div class="hero-pills">
-        <div class="hero-pill">📋 <strong id="retro-period-display">78 encuestas</strong></div>
-        <div class="hero-pill" id="retro-pill-count" style="">📊 <strong id="retro-count-display">78 mostradas</strong></div>
+        <div class="hero-pill">📋 <strong id="retro-period-display">—</strong></div>
+        <div class="hero-pill" id="retro-pill-count" style="display:none">📊 <strong id="retro-count-display"></strong></div>
       </div>
     </div>
 
     <!-- Controles de visualización -->
     <div class="diag-controls" style="margin-top:24px">
       <label>Filtrar por producto:</label>
-      <select id="retro-sel-prod"><option value="">Todos los productos</option><option value="Generales">Generales</option><option value="Integración Pymes - Alojamientos">Integración Pymes - Alojamientos</option><option value="Integración Restobar - Pymes">Integración Restobar - Pymes</option><option value="Nómina">Nómina</option><option value="Pymes">Pymes</option></select>
-      <select id="retro-sel-sesion"><option value="">Todas las sesiones</option><option value="Calculo de retención en la fuente sobre salario">Calculo de retención en la fuente sobre salario</option><option value="Capacitación de Integración Loggro Pymes - Alojamientos">Capacitación de Integración Loggro Pymes - Alojamientos</option><option value="Cálculo de horas extras y recargos">Cálculo de horas extras y recargos</option><option value="Dashboard">Dashboard</option><option value="Facturación Recurrente y Ventas tipo Exportación">Facturación Recurrente y Ventas tipo Exportación</option><option value="Loggro Admin - Alojamientos">Loggro Admin - Alojamientos</option><option value="Pago de Nómina desde Diferentes Cuentas Bancarias">Pago de Nómina desde Diferentes Cuentas Bancarias</option><option value="Segunda sesión práctica integración Restobar - Pymes">Segunda sesión práctica integración Restobar - Pymes</option><option value="Sesión practica Integración Loggro Restobar - Pymes">Sesión practica Integración Loggro Restobar - Pymes</option><option value="Ítems con Atributos">Ítems con Atributos</option><option value="Ítems con Lotes">Ítems con Lotes</option></select>
+      <select id="retro-sel-prod">
+        <option value="">Todos los productos</option>
+      </select>
+      <select id="retro-sel-sesion">
+        <option value="">Todas las sesiones</option>
+      </select>
     </div>
 
     <!-- KPIs Retroalimentación -->
     <div class="diag-kpi">
-      <div class="dkpi-card"><span class="dkpi-icon">📋</span><div class="dkpi-val" id="rkpi-total">78</div><div class="dkpi-lbl">Encuestas</div></div>
-      <div class="dkpi-card"><span class="dkpi-icon">⭐</span><div class="dkpi-val good" id="rkpi-utilidad">4.96</div><div class="dkpi-lbl">Utilidad promedio</div></div>
-      <div class="dkpi-card"><span class="dkpi-icon">👩‍🏫</span><div class="dkpi-val good" id="rkpi-acomp">4.94</div><div class="dkpi-lbl">Acompañamiento</div></div>
-      <div class="dkpi-card"><span class="dkpi-icon">✅</span><div class="dkpi-val" id="rkpi-claridad">77/78</div><div class="dkpi-lbl">Claridad (Sí)</div></div>
-      <div class="dkpi-card"><span class="dkpi-icon">🎯</span><div class="dkpi-val" id="rkpi-productos">5</div><div class="dkpi-lbl">Productos evaluados</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">📋</span><div class="dkpi-val" id="rkpi-total">—</div><div class="dkpi-lbl">Encuestas</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">⭐</span><div class="dkpi-val" id="rkpi-utilidad">—</div><div class="dkpi-lbl">Utilidad promedio</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">👩‍🏫</span><div class="dkpi-val" id="rkpi-acomp">—</div><div class="dkpi-lbl">Acompañamiento</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">✅</span><div class="dkpi-val" id="rkpi-claridad">—</div><div class="dkpi-lbl">Claridad (Sí)</div></div>
+      <div class="dkpi-card"><span class="dkpi-icon">🎯</span><div class="dkpi-val" id="rkpi-productos">—</div><div class="dkpi-lbl">Productos evaluados</div></div>
     </div>
 
     <!-- Gráficas -->
@@ -744,8 +715,8 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <div class="sec-label">Análisis de satisfacción</div>
       <h2>Evaluación por Producto</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
-        <div class="chart-wrap" style="margin:0"><canvas id="chart-retro-prod" style="box-sizing: border-box; display: block; height: 265px; width: 530px;" width="741" height="370"></canvas></div>
-        <div class="chart-wrap" style="margin:0"><canvas id="chart-retro-dist" style="box-sizing: border-box; display: block; height: 320px; width: 536px;" width="750" height="447"></canvas></div>
+        <div class="chart-wrap" style="margin:0"><canvas id="chart-retro-prod"></canvas></div>
+        <div class="chart-wrap" style="margin:0"><canvas id="chart-retro-dist"></canvas></div>
       </div>
     </div>
 
@@ -753,27 +724,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
     <div class="section">
       <div class="sec-label">Detalle por línea</div>
       <h2>Calificaciones por Producto</h2>
-      <div class="prod-grid" id="retro-prod-cards"><div class="prod-card">
-      <div class="pc-top"><span class="pc-name">Generales</span><span class="pc-pct">4.33</span></div>
-      <div class="pc-bar-bg"><div class="pc-bar-fill" style="width:86.6%;background:#E55E1E"></div></div>
-      <p class="pc-meta">3 encuestas · Acompañamiento: 5</p>
-    </div><div class="prod-card">
-      <div class="pc-top"><span class="pc-name">Integración Pymes - Alojamientos</span><span class="pc-pct">5</span></div>
-      <div class="pc-bar-bg"><div class="pc-bar-fill" style="width:100%;background:#E55E1E"></div></div>
-      <p class="pc-meta">7 encuestas · Acompañamiento: 5</p>
-    </div><div class="prod-card">
-      <div class="pc-top"><span class="pc-name">Integración Restobar - Pymes</span><span class="pc-pct">5</span></div>
-      <div class="pc-bar-bg"><div class="pc-bar-fill" style="width:100%;background:#E55E1E"></div></div>
-      <p class="pc-meta">13 encuestas · Acompañamiento: 4.92</p>
-    </div><div class="prod-card">
-      <div class="pc-top"><span class="pc-name">Nómina</span><span class="pc-pct">4.93</span></div>
-      <div class="pc-bar-bg"><div class="pc-bar-fill" style="width:98.6%;background:#E55E1E"></div></div>
-      <p class="pc-meta">14 encuestas · Acompañamiento: 4.93</p>
-    </div><div class="prod-card">
-      <div class="pc-top"><span class="pc-name">Pymes</span><span class="pc-pct">5</span></div>
-      <div class="pc-bar-bg"><div class="pc-bar-fill" style="width:100%;background:#E55E1E"></div></div>
-      <p class="pc-meta">41 encuestas · Acompañamiento: 4.93</p>
-    </div></div>
+      <div class="prod-grid" id="retro-prod-cards"></div>
     </div>
 
     <!-- Tabla de respuestas -->
@@ -782,411 +733,11 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <h2 id="retro-table-title">Encuestas Recibidas</h2>
       <div class="diag-table-wrap">
         <table class="diag-table" id="retro-table">
-          <thead id="retro-thead"><tr><th>Fecha</th><th>Nombre</th><th>Producto</th><th>Sesión</th><th>Utilidad</th><th>Acompañ.</th><th>Claridad</th></tr></thead>
-          <tbody id="retro-tbody"><tr>
-      <td>05/08/2025</td>
-      <td>Jerónimo Junior Yaya Bolívar</td>
-      <td>Nómina</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Cálculo de horas extras y recargos">Cálculo de horas extras y recargos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>05/08/2025</td>
-      <td>Luisa Fernanda Mejia Trujillo</td>
-      <td>Nómina</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Cálculo de horas extras y recargos">Cálculo de horas extras y recargos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>05/08/2025</td>
-      <td>Jhurley Tatiana Hoyos Bustamante</td>
-      <td>Nómina</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Cálculo de horas extras y recargos">Cálculo de horas extras y recargos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>07/08/2025</td>
-      <td>Lina Marcela Ruiz Alvarez</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Sesión practica Integración Loggro Restobar - Pymes">Sesión practica Integración Loggro Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>07/08/2025</td>
-      <td>Diana Mileidy Bernal Yanez</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Sesión practica Integración Loggro Restobar - Pymes">Sesión practica Integración Loggro Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>07/08/2025</td>
-      <td>Eduardo Jose Morillo Alcala</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Sesión practica Integración Loggro Restobar - Pymes">Sesión practica Integración Loggro Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>07/08/2025</td>
-      <td>Katherine Paola Reyes Mieles</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Sesión practica Integración Loggro Restobar - Pymes">Sesión practica Integración Loggro Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>07/08/2025</td>
-      <td>Laura Camila Velez Rivera</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Sesión practica Integración Loggro Restobar - Pymes">Sesión practica Integración Loggro Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>07/08/2025</td>
-      <td>Daniel David Ortega Rico</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Sesión practica Integración Loggro Restobar - Pymes">Sesión practica Integración Loggro Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>07/08/2025</td>
-      <td>Jackeline Caldas Acero</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Sesión practica Integración Loggro Restobar - Pymes">Sesión practica Integración Loggro Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>10/08/2025</td>
-      <td>Angie Yulieth Garcia Redondo</td>
-      <td>Nómina</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Pago de Nómina desde Diferentes Cuentas Bancarias">Pago de Nómina desde Diferentes Cuentas Bancarias</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>10/08/2025</td>
-      <td>Nelfi Yamile Moreno Moreno</td>
-      <td>Nómina</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Pago de Nómina desde Diferentes Cuentas Bancarias">Pago de Nómina desde Diferentes Cuentas Bancarias</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>10/08/2025</td>
-      <td>Leidy Johana Garcia Rivera</td>
-      <td>Nómina</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Pago de Nómina desde Diferentes Cuentas Bancarias">Pago de Nómina desde Diferentes Cuentas Bancarias</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>10/08/2025</td>
-      <td>Maria Natalia Arbelaez Valencia</td>
-      <td>Nómina</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Pago de Nómina desde Diferentes Cuentas Bancarias">Pago de Nómina desde Diferentes Cuentas Bancarias</td>
-      <td><span class="score-pill score-high">4</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Parcialmente</td>
-    </tr><tr>
-      <td>25/08/2025</td>
-      <td>Leidy Johana Garcia Rivera</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>25/08/2025</td>
-      <td>Karen Dahyan Quintero Bonilla</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>25/08/2025</td>
-      <td>Jhurley Tatiana Hoyos Bustamante</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>25/08/2025</td>
-      <td>Katherine Paola Reyes Mieles</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>25/08/2025</td>
-      <td>Nelfi Yamile Moreno Moreno</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>25/08/2025</td>
-      <td>Caroll Yulieth Contreras Rico</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>25/08/2025</td>
-      <td>Jackeline Caldas Acero</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>26/08/2025</td>
-      <td>Eduardo Jose Morillo Alcala</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>26/08/2025</td>
-      <td>Daniel David Ortega Rico</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>26/08/2025</td>
-      <td>Maria Natalia Arbelaez Valencia</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">4</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>26/08/2025</td>
-      <td>Shirley Johanna Cassiani Caro</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>26/08/2025</td>
-      <td>Jerónimo Junior Yaya Bolívar</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>26/08/2025</td>
-      <td>Mabel Johanna Villa Hernandez</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Atributos">Ítems con Atributos</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>28/08/2025</td>
-      <td>Lina Marcela Ruiz Alvarez</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Segunda sesión práctica integración Restobar - Pymes">Segunda sesión práctica integración Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>28/08/2025</td>
-      <td>Angie Paola Casallas Ortiz</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Segunda sesión práctica integración Restobar - Pymes">Segunda sesión práctica integración Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>28/08/2025</td>
-      <td>Laura Camila Velez Rivera</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Segunda sesión práctica integración Restobar - Pymes">Segunda sesión práctica integración Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>28/08/2025</td>
-      <td>Brigitte Paola Rodriguez Barrios</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Segunda sesión práctica integración Restobar - Pymes">Segunda sesión práctica integración Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>28/08/2025</td>
-      <td>Alexandra Maireth Villa Guerra</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Segunda sesión práctica integración Restobar - Pymes">Segunda sesión práctica integración Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>28/08/2025</td>
-      <td>Diana Milena Zarate Beltran</td>
-      <td>Integración Restobar - Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Segunda sesión práctica integración Restobar - Pymes">Segunda sesión práctica integración Restobar - Pymes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">4</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Leidy Johana Garcia Rivera</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Shirley Johanna Cassiani Caro</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Jhurley Tatiana Hoyos Bustamante</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Monica Estefania Murillo Espitia</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Caroll Yulieth Contreras Rico</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Daniel David Ortega Rico</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Jerónimo Junior Yaya Bolívar</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Diana Maria Giraldo Jimenez</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Anyi Suley Neiza Diaz</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Gladis del Carmen Reyes Baron</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">4</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Maite Viviana Gutierrez Hernandez</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Jackeline Caldas Acero</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Nelfi Yamile Moreno Moreno</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>09/09/2025</td>
-      <td>Karen Dahyan Quintero Bonilla</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Ítems con Lotes">Ítems con Lotes</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>15/09/2025</td>
-      <td>Maria Natalia Arbelaez Valencia</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Dashboard">Dashboard</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>15/09/2025</td>
-      <td>Katherine Paola Reyes Mieles</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Dashboard">Dashboard</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr><tr>
-      <td>15/09/2025</td>
-      <td>Monica Estefania Murillo Espitia</td>
-      <td>Pymes</td>
-      <td style="font-size:.8rem;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="Dashboard">Dashboard</td>
-      <td><span class="score-pill score-high">5</span></td>
-      <td><span class="score-pill score-high">4</span></td>
-      <td style="font-size:.85rem">Si</td>
-    </tr></tbody>
+          <thead id="retro-thead"></thead>
+          <tbody id="retro-tbody"></tbody>
         </table>
       </div>
-      <div class="empty-state" id="retro-empty" style="display: none;">
+      <div class="empty-state" id="retro-empty">
         <span class="es-icon">⭐</span>
         <h3>Sin datos de retroalimentación</h3>
         <p>Accede como administrador para cargar el archivo Excel de encuestas de retroalimentación.</p>
@@ -1195,7 +746,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
 
     <div class="footer">
       <p><strong>Área de Formación</strong> · Retroalimentación de reentrenamientos</p>
-      <p style="margin-top:8px;opacity:.5;font-size:.77rem" id="retro-footer-fecha">Actualizado el 18 de febrero de 2026</p>
+      <p style="margin-top:8px;opacity:.5;font-size:.77rem" id="retro-footer-fecha"></p>
     </div>
   </div><!-- /tab-retroalimentacion -->
 
@@ -1429,7 +980,7 @@ document.getElementById('f-year').addEventListener('change', () => {
 });
 
 ['f-desde','f-hasta','f-tipo','f-producto','f-participante'].forEach(id =>
-  document.getElementById(id).addEventListener('change', applyFilters));
+  document.getElementById(id).addEventListener('change', () => {}));  // Removido auto-apply
 
 document.getElementById('btn-clear-f').addEventListener('click', () => {
   ['f-year','f-desde','f-hasta','f-tipo','f-producto','f-participante'].forEach(id =>
@@ -2250,6 +1801,5 @@ window.testDiagnostico = function(producto) {
   }
 })();
 </script>
-
-
-</body></html>
+</body>
+</html>
