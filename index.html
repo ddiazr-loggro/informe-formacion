@@ -825,7 +825,19 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
 
     <!-- Controles de visualización -->
     <div class="diag-controls" style="margin-top:24px">
-      <label>Filtrar por curso:</label>
+      <label>Período:</label>
+      <select id="think-sel-year">
+        <option value="">Todos los años</option>
+      </select>
+      <select id="think-sel-desde">
+        <option value="">Desde…</option>
+      </select>
+      <span style="color:var(--dk3);font-size:.85rem">→</span>
+      <select id="think-sel-hasta">
+        <option value="">Hasta…</option>
+      </select>
+      
+      <label style="margin-left:20px">Filtrar por curso:</label>
       <select id="think-sel-curso">
         <option value="">Todos los cursos</option>
       </select>
@@ -836,6 +848,8 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
         <option value="Cuestionario">Solo Cuestionarios</option>
         <option value="Encuesta">Solo Encuestas</option>
       </select>
+      
+      <button id="think-btn-clear" style="margin-left:8px;background:none;border:1.5px solid var(--g5);color:var(--dk3);padding:6px 13px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:.81rem">✕ Limpiar</button>
     </div>
 
     <!-- KPIs Thinkific -->
@@ -847,13 +861,55 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <div class="dkpi-card"><span class="dkpi-icon">✅</span><div class="dkpi-val" id="tkpi-aprobados">—</div><div class="dkpi-lbl">Aprobados (≥70%)</div></div>
     </div>
 
-    <!-- Gráficas -->
-    <div class="section">
-      <div class="sec-label">Análisis de resultados</div>
+    <!-- Gráficas de Cuestionarios -->
+    <div class="section" id="think-section-cuestionarios">
+      <div class="sec-label">Cuestionarios - Evaluaciones finales</div>
       <h2>Desempeño por Curso</h2>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
         <div class="chart-wrap" style="margin:0"><canvas id="chart-think-cursos"></canvas></div>
         <div class="chart-wrap" style="margin:0"><canvas id="chart-think-dist"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Gráficas de Encuestas -->
+    <div class="section" id="think-section-encuestas">
+      <div class="sec-label">Encuestas - Feedback de usuarios</div>
+      <h2>Análisis de Encuestas</h2>
+      
+      <!-- Fila 1: Comparativa y Evolución mensual -->
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:22px;align-items:start;margin-bottom:22px">
+        <div class="chart-wrap" style="margin:0">
+          <h3 style="font-size:.95rem;color:var(--dk);margin-bottom:10px;font-weight:600">Comparativa Encuestas vs Cuestionarios</h3>
+          <canvas id="chart-think-comparativa"></canvas>
+        </div>
+        <div class="chart-wrap" style="margin:0">
+          <h3 style="font-size:.95rem;color:var(--dk);margin-bottom:10px;font-weight:600">Evolución Mensual de Encuestas</h3>
+          <canvas id="chart-think-encuestas-mes"></canvas>
+        </div>
+      </div>
+      
+      <!-- Fila 2: Distribución por día y Tasa por curso -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start;margin-bottom:22px">
+        <div class="chart-wrap" style="margin:0">
+          <h3 style="font-size:.95rem;color:var(--dk);margin-bottom:10px;font-weight:600">Distribución por Día de la Semana</h3>
+          <canvas id="chart-think-encuestas-dia"></canvas>
+        </div>
+        <div class="chart-wrap" style="margin:0">
+          <h3 style="font-size:.95rem;color:var(--dk);margin-bottom:10px;font-weight:600">Tasa de Respuesta por Curso</h3>
+          <canvas id="chart-think-encuestas-tasa"></canvas>
+        </div>
+      </div>
+      
+      <!-- Fila 3: Evolución año sobre año y Encuestas por curso -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
+        <div class="chart-wrap" style="margin:0">
+          <h3 style="font-size:.95rem;color:var(--dk);margin-bottom:10px;font-weight:600">Evolución Año sobre Año</h3>
+          <canvas id="chart-think-encuestas-years"></canvas>
+        </div>
+        <div class="chart-wrap" style="margin:0">
+          <h3 style="font-size:.95rem;color:var(--dk);margin-bottom:10px;font-weight:600">Top 10 Cursos con Más Encuestas</h3>
+          <canvas id="chart-think-encuestas-curso"></canvas>
+        </div>
       </div>
     </div>
 
@@ -1952,6 +2008,9 @@ window.testDiagnostico = function(producto) {
 function renderThinkific() {
   const cursoSel = document.getElementById('think-sel-curso').value;
   const tipoSel = document.getElementById('think-sel-tipo').value;
+  const yearSel = document.getElementById('think-sel-year').value;
+  const desdeSel = document.getElementById('think-sel-desde').value;
+  const hastaSel = document.getElementById('think-sel-hasta').value;
   
   const table = document.getElementById('think-table');
   const empty = document.getElementById('think-empty');
@@ -1972,6 +2031,20 @@ function renderThinkific() {
   let rows = thinkificData;
   if (cursoSel) rows = rows.filter(r=>r.curso===cursoSel);
   if (tipoSel) rows = rows.filter(r=>r.encuesta===tipoSel);
+  
+  // Filtrar por período
+  if (yearSel || desdeSel || hastaSel) {
+    rows = rows.filter(r=>{
+      if (!r.fecha || r.fecha==='') return false;
+      const parts = r.fecha.split('/');
+      if (parts.length !== 3) return false;
+      const mes = `${parts[2]}-${parts[1]}`;
+      if (yearSel && !mes.startsWith(yearSel)) return false;
+      if (desdeSel && mes < desdeSel) return false;
+      if (hastaSel && mes > hastaSel) return false;
+      return true;
+    });
+  }
   
   // KPIs
   const total = rows.length;
@@ -2048,6 +2121,283 @@ function renderThinkific() {
     options:{responsive:true,cutout:'55%',plugins:{legend:{position:'bottom'}}}
   });
   
+  // Mostrar/ocultar secciones según filtro de tipo
+  const secCuest = document.getElementById('think-section-cuestionarios');
+  const secEnc = document.getElementById('think-section-encuestas');
+  if (tipoSel === 'Encuesta') {
+    secCuest.style.display = 'none';
+    secEnc.style.display = '';
+  } else if (tipoSel === 'Cuestionario') {
+    secCuest.style.display = '';
+    secEnc.style.display = 'none';
+  } else {
+    secCuest.style.display = '';
+    secEnc.style.display = '';
+  }
+  
+  // Gráficas de Encuestas
+  const encuestas = rows.filter(r=>r.encuesta==='Encuesta');
+  const cuestionarios = rows.filter(r=>r.encuesta==='Cuestionario');
+  
+  if (encuestas.length > 0 || cuestionarios.length > 0) {
+    
+    // 1. GRÁFICA COMPARATIVA: Encuestas vs Cuestionarios
+    dc('think-comparativa');
+    charts['think-comparativa'] = new Chart(document.getElementById('chart-think-comparativa'),{
+      type:'doughnut',
+      data:{
+        labels:['Encuestas','Cuestionarios'],
+        datasets:[{
+          data:[encuestas.length, cuestionarios.length],
+          backgroundColor:['#2E7D32','#E55E1E'],
+          borderWidth:3,
+          borderColor:'#fff'
+        }]
+      },
+      options:{
+        responsive:true,
+        cutout:'60%',
+        plugins:{
+          legend:{position:'bottom'},
+          tooltip:{
+            callbacks:{
+              label: ctx => {
+                const total = encuestas.length + cuestionarios.length;
+                const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // 2. EVOLUCIÓN MENSUAL DE ENCUESTAS
+    const porMes = {};
+    encuestas.forEach(r=>{
+      if (!r.fecha || r.fecha==='') return;
+      const parts = r.fecha.split('/');
+      if (parts.length === 3) {
+        const mes = `${parts[2]}-${parts[1]}`;
+        porMes[mes] = (porMes[mes]||0) + 1;
+      }
+    });
+    
+    const meses = Object.keys(porMes).sort();
+    const mNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const mesesLabels = meses.map(m=>{
+      const [y,mo] = m.split('-');
+      return `${mNames[+mo-1]} ${y}`;
+    });
+    
+    dc('think-encuestas-mes');
+    charts['think-encuestas-mes'] = new Chart(document.getElementById('chart-think-encuestas-mes'),{
+      type:'line',
+      data:{
+        labels:mesesLabels,
+        datasets:[{
+          label:'Encuestas',
+          data:meses.map(m=>porMes[m]),
+          borderColor:'#2E7D32',
+          backgroundColor:'rgba(46,125,50,.15)',
+          borderWidth:3,
+          fill:true,
+          tension:.4,
+          pointBackgroundColor:'#2F2F2F',
+          pointBorderColor:'#2E7D32',
+          pointBorderWidth:2,
+          pointRadius:5,
+          pointHoverRadius:7
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false}},
+        scales:{
+          y:{beginAtZero:true,ticks:{precision:0}},
+          x:{grid:{display:false},ticks:{maxRotation:45,minRotation:45}}
+        }
+      }
+    });
+    
+    // 3. DISTRIBUCIÓN POR DÍA DE LA SEMANA
+    const porDia = {Lun:0,Mar:0,Mié:0,Jue:0,Vie:0,Sáb:0,Dom:0};
+    const diasNombres = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+    encuestas.forEach(r=>{
+      if (!r.fecha || r.fecha==='') return;
+      const parts = r.fecha.split('/');
+      if (parts.length === 3) {
+        const fecha = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        if (!isNaN(fecha.getTime())) {
+          const dia = diasNombres[fecha.getDay()];
+          porDia[dia]++;
+        }
+      }
+    });
+    
+    const diasOrden = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+    
+    dc('think-encuestas-dia');
+    charts['think-encuestas-dia'] = new Chart(document.getElementById('chart-think-encuestas-dia'),{
+      type:'bar',
+      data:{
+        labels:diasOrden,
+        datasets:[{
+          label:'Encuestas',
+          data:diasOrden.map(d=>porDia[d]),
+          backgroundColor:'#2E7D32',
+          borderRadius:5
+        }]
+      },
+      options:{
+        responsive:true,
+        plugins:{legend:{display:false}},
+        scales:{
+          y:{beginAtZero:true,ticks:{precision:0}},
+          x:{grid:{display:false}}
+        }
+      }
+    });
+    
+    // 4. TASA DE RESPUESTA POR CURSO
+    const tasaPorCurso = {};
+    const cursosUnicos = [...new Set(rows.map(r=>r.curso))];
+    
+    cursosUnicos.forEach(curso=>{
+      const totalCuest = cuestionarios.filter(r=>r.curso===curso).length;
+      const totalEnc = encuestas.filter(r=>r.curso===curso).length;
+      if (totalCuest > 0) {
+        tasaPorCurso[curso] = {
+          tasa: ((totalEnc / totalCuest) * 100).toFixed(1),
+          encuestas: totalEnc,
+          cuestionarios: totalCuest
+        };
+      }
+    });
+    
+    const cursosConTasa = Object.keys(tasaPorCurso)
+      .sort((a,b)=>tasaPorCurso[b].tasa - tasaPorCurso[a].tasa)
+      .slice(0,10);
+    
+    dc('think-encuestas-tasa');
+    charts['think-encuestas-tasa'] = new Chart(document.getElementById('chart-think-encuestas-tasa'),{
+      type:'bar',
+      data:{
+        labels:cursosConTasa.map(c=>c.substring(0,25)),
+        datasets:[{
+          label:'Tasa %',
+          data:cursosConTasa.map(c=>tasaPorCurso[c].tasa),
+          backgroundColor:cursosConTasa.map(c=>{
+            const t = parseFloat(tasaPorCurso[c].tasa);
+            return t >= 80 ? '#2E7D32' : t >= 50 ? '#E65100' : '#C62828';
+          }),
+          borderRadius:5
+        }]
+      },
+      options:{
+        responsive:true,
+        indexAxis:'y',
+        plugins:{
+          legend:{display:false},
+          tooltip:{
+            callbacks:{
+              label: ctx => {
+                const curso = cursosConTasa[ctx.dataIndex];
+                const data = tasaPorCurso[curso];
+                return ` ${data.tasa}% (${data.encuestas}/${data.cuestionarios})`;
+              }
+            }
+          }
+        },
+        scales:{
+          x:{beginAtZero:true,max:100},
+          y:{grid:{display:false}}
+        }
+      }
+    });
+    
+    // 5. EVOLUCIÓN AÑO SOBRE AÑO
+    const encPorYear = {};
+    encuestas.forEach(r=>{
+      if (!r.fecha || r.fecha==='') return;
+      const parts = r.fecha.split('/');
+      if (parts.length === 3) {
+        const year = parts[2];
+        const mes = parseInt(parts[1]);
+        if (!encPorYear[year]) encPorYear[year] = Array(12).fill(0);
+        encPorYear[year][mes-1]++;
+      }
+    });
+    
+    const years = Object.keys(encPorYear).sort();
+    const colorsYears = ['#E55E1E','#2E7D32','#1565C0','#E65100'];
+    
+    dc('think-encuestas-years');
+    charts['think-encuestas-years'] = new Chart(document.getElementById('chart-think-encuestas-years'),{
+      type:'line',
+      data:{
+        labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+        datasets:years.map((y,i)=>({
+          label:y,
+          data:encPorYear[y],
+          borderColor:colorsYears[i%colorsYears.length],
+          backgroundColor:'transparent',
+          borderWidth:2,
+          tension:.4,
+          pointRadius:4,
+          pointHoverRadius:6
+        }))
+      },
+      options:{
+        responsive:true,
+        plugins:{
+          legend:{position:'top'},
+          tooltip:{mode:'index',intersect:false}
+        },
+        scales:{
+          y:{beginAtZero:true,ticks:{precision:0}},
+          x:{grid:{display:false}}
+        }
+      }
+    });
+    
+    // 6. TOP 10 CURSOS CON MÁS ENCUESTAS
+    const porCurso = {};
+    encuestas.forEach(r=>{
+      porCurso[r.curso] = (porCurso[r.curso]||0) + 1;
+    });
+    
+    const cursosEnc = Object.keys(porCurso).sort((a,b)=>porCurso[b]-porCurso[a]).slice(0,10);
+    
+    dc('think-encuestas-curso');
+    charts['think-encuestas-curso'] = new Chart(document.getElementById('chart-think-encuestas-curso'),{
+      type:'bar',
+      data:{
+        labels:cursosEnc.map(c=>c.substring(0,25)),
+        datasets:[{
+          label:'Encuestas',
+          data:cursosEnc.map(c=>porCurso[c]),
+          backgroundColor:PAL.slice(0,cursosEnc.length),
+          borderRadius:5
+        }]
+      },
+      options:{
+        responsive:true,
+        indexAxis:'y',
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{beginAtZero:true,ticks:{precision:0}},
+          y:{grid:{display:false}}
+        }
+      }
+    });
+    
+  } else {
+    // Limpiar todas las gráficas si no hay datos
+    ['think-comparativa','think-encuestas-mes','think-encuestas-dia',
+     'think-encuestas-tasa','think-encuestas-years','think-encuestas-curso'].forEach(dc);
+  }
+  
   // Cards por curso
   const pg = document.getElementById('think-curso-cards');
   pg.innerHTML='';
@@ -2095,11 +2445,63 @@ function updateThinkificSelects() {
   const cursoSel = document.getElementById('think-sel-curso');
   cursoSel.innerHTML = '<option value="">Todos los cursos</option>' + 
     cursos.map(c=>`<option value="${c}">${c}</option>`).join('');
+  
+  // Años
+  const allMeses = [...new Set(thinkificData.filter(r=>r.fecha).map(r=>{
+    const p=r.fecha.split('/');
+    return p.length===3?`${p[2]}-${p[1]}`:null;
+  }).filter(Boolean))].sort();
+  
+  const years = [...new Set(allMeses.map(m=>m.split('-')[0]))].sort();
+  const yearSel = document.getElementById('think-sel-year');
+  yearSel.innerHTML = '<option value="">Todos los años</option>' + 
+    years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  
+  // Meses
+  populateThinkMesSelects(allMeses);
 }
 
-['think-sel-curso','think-sel-tipo'].forEach(id=>{
+['think-sel-curso','think-sel-tipo','think-sel-year','think-sel-desde','think-sel-hasta'].forEach(id=>{
   document.getElementById(id).addEventListener('change',renderThinkific);
 });
+
+// Sincronizar año con meses
+document.getElementById('think-sel-year').addEventListener('change', () => {
+  const y = document.getElementById('think-sel-year').value;
+  if (thinkificData) {
+    const allMeses = [...new Set(thinkificData.filter(r=>r.fecha).map(r=>{
+      const p=r.fecha.split('/');
+      return p.length===3?`${p[2]}-${p[1]}`:null;
+    }).filter(Boolean))].sort();
+    
+    const meses = y ? allMeses.filter(m=>m.startsWith(y)) : allMeses;
+    populateThinkMesSelects(meses);
+    document.getElementById('think-sel-desde').value = '';
+    document.getElementById('think-sel-hasta').value = '';
+  }
+});
+
+// Botón limpiar
+document.getElementById('think-btn-clear').addEventListener('click', () => {
+  ['think-sel-year','think-sel-desde','think-sel-hasta','think-sel-curso','think-sel-tipo'].forEach(id =>
+    document.getElementById(id).value='');
+  if (thinkificData) {
+    const allMeses = [...new Set(thinkificData.filter(r=>r.fecha).map(r=>{
+      const p=r.fecha.split('/');
+      return p.length===3?`${p[2]}-${p[1]}`:null;
+    }).filter(Boolean))].sort();
+    populateThinkMesSelects(allMeses);
+  }
+  renderThinkific();
+});
+
+function populateThinkMesSelects(meses) {
+  const mNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const fmtMes = m => { const [y,mo]=m.split('-'); return `${mNames[+mo-1]} ${y}`; };
+  const opts = meses.map(m=>`<option value="${m}">${fmtMes(m)}</option>`).join('');
+  document.getElementById('think-sel-desde').innerHTML = '<option value="">Desde…</option>' + opts;
+  document.getElementById('think-sel-hasta').innerHTML = '<option value="">Hasta…</option>' + opts;
+}
 
 
 // ═══════════════════════════════
