@@ -925,6 +925,7 @@ let fCfg       = JSON.parse(localStorage.getItem(SK.fCfg)||'{"tipo":false,"produ
 let diagProds  = JSON.parse(localStorage.getItem(SK.diagProds)||'["Nómina","Pymes","Restobar","Alojamientos"]');
 let diagData   = JSON.parse(localStorage.getItem(SK.diagData)||'{}'); // { "Nómina": [...rows] }
 let retroData  = JSON.parse(localStorage.getItem(SK.retro)||'null'); // datos de retroalimentación
+let thinkificData = null; // Inicializar Thinkific vacío (se carga después)
 
 // ═══════════════════════════════
 //  NAVEGACIÓN TABS
@@ -1934,10 +1935,25 @@ window.testDiagnostico = function(producto) {
       document.getElementById('abar-status').textContent=`✓ ${allData.rows.length.toLocaleString('es-CO')} registros cargados`;
       
       // Cargar Thinkific
-      if(thinkificData && thinkificData.length>0){
-        updateThinkificSelects();
-        renderThinkific();
-        document.getElementById('think-footer-fecha').textContent=`Actualizado el ${new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'})}`;
+      try {
+        const thinkDataRaw = localStorage.getItem('fc_thinkific');
+        if (thinkDataRaw && thinkDataRaw !== 'null') {
+          thinkificData = JSON.parse(thinkDataRaw);
+          console.log('📦 Thinkific cargado:', thinkificData ? thinkificData.length : 0, 'registros');
+          
+          if (thinkificData && thinkificData.length > 0) {
+            updateThinkificSelects();
+            renderThinkific();
+            document.getElementById('think-footer-fecha').textContent = 
+              `Actualizado el ${new Date().toLocaleDateString('es-CO',{year:'numeric',month:'long',day:'numeric'})}`;
+          }
+        } else {
+          console.log('⚠ Thinkific: No hay datos en localStorage');
+          thinkificData = [];
+        }
+      } catch(e) {
+        console.error('❌ Error cargando Thinkific:', e);
+        thinkificData = [];
       }
       if(lastUpdate) document.getElementById('abar-update').textContent=`Actualizado: ${lastUpdate}`;
       document.getElementById('period-display').textContent=`${allData.fechaInicio} — ${allData.fechaFin}`;
@@ -1952,7 +1968,7 @@ window.testDiagnostico = function(producto) {
 // ═══════════════════════════════
 //  THINKIFIC - LÓGICA
 // ═══════════════════════════════
-let thinkificData = JSON.parse(localStorage.getItem('fc_thinkific')||'null');
+// thinkificData ya declarado arriba en variables globales
 
 function renderThinkific() {
   const cursoSel = document.getElementById('think-sel-curso').value;
