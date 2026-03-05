@@ -363,6 +363,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
 .diag-hero-logo:hover{opacity:1;transform:scale(1.05)}
 @media(max-width:768px){
   .hero-logo,.diag-hero-logo{max-width:80px;top:15px;right:20px}
+  #area-section .area-charts-grid{grid-template-columns:1fr !important}
 }
 </style>
 </head>
@@ -520,6 +521,7 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
     <select class="fsel" id="f-tipo" style="display:none"><option value="">Todos los tipos</option></select>
     <select class="fsel" id="f-producto" style="display:none"><option value="">Todos los productos</option></select>
     <select class="fsel" id="f-participante" style="display:none"><option value="">Todos los participantes</option></select>
+    <select class="fsel" id="f-area" style="display:none"><option value="">Todas las áreas</option></select>
     <button id="btn-clear-f">✕ Limpiar</button>
   <button id="btn-apply-filters">🔍 Buscar</button>
     <span class="f-badge" id="f-badge">Filtro activo</span>
@@ -639,6 +641,81 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <h2>Distribución por Producto</h2>
       <div class="chart-wrap"><canvas id="chart-producto"></canvas></div>
       <div class="prod-grid" id="prod-cards"></div>
+    </div>
+
+    <!-- ════════════ ANÁLISIS POR ÁREA ════════════ -->
+    <div class="section" id="area-section">
+      <div class="sec-label">Participación por equipo</div>
+      <h2>Análisis por Área</h2>
+      <p style="color:var(--dk3);margin-bottom:20px;font-size:.9rem">Distribución de sesiones y asistentes por área organizacional.</p>
+      
+      <!-- Explicación de métricas -->
+      <div style="background:rgba(229,94,30,.08);border-left:4px solid var(--or);padding:16px 20px;border-radius:8px;margin-bottom:24px">
+        <div style="font-weight:600;color:var(--or);margin-bottom:12px;font-size:.95rem">📊 Entendiendo las métricas</div>
+        <div style="display:grid;gap:10px;font-size:.88rem;color:var(--dk3)">
+          <div style="display:flex;gap:12px">
+            <strong style="color:var(--dk);min-width:180px">Asistentes Únicos:</strong>
+            <span>Número de personas diferentes que asistieron a sesiones del área. Cada persona se cuenta una sola vez, sin importar cuántas sesiones haya tomado.</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <strong style="color:var(--dk);min-width:180px">Asistencias Totales:</strong>
+            <span>Suma total de todas las asistencias registradas. Si una persona asiste a 3 sesiones, cuenta como 3 asistencias.</span>
+          </div>
+          <div style="display:flex;gap:12px">
+            <strong style="color:var(--dk);min-width:180px">Promedio asist/sesión:</strong>
+            <span>Número promedio de personas que asistieron por sesión. Se calcula dividiendo las asistencias totales entre el número de sesiones.</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="area-charts-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="chart-wrap"><canvas id="chart-area-ses"></canvas></div>
+        <div class="chart-wrap"><canvas id="chart-area-asist"></canvas></div>
+      </div>
+      <!-- Controles de filtrado de áreas -->
+      <div style="margin-top:20px;padding:14px;background:rgba(0,0,0,.02);border-radius:8px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+        <span style="font-weight:600;color:var(--dk);font-size:.88rem">Ocultar áreas:</span>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem">
+          <input type="checkbox" id="hide-satisfaccion" style="cursor:pointer">
+          <span>Satisfacción & Éxito de cliente</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.88rem">
+          <input type="checkbox" id="hide-conocimiento" style="cursor:pointer">
+          <span>Gestión del conocimiento</span>
+        </label>
+      </div>
+
+      <div class="diag-table-wrap" style="margin-top:18px">
+        <p style="color:var(--dk3);font-size:.85rem;margin-bottom:10px;font-style:italic">
+          💡 Haz clic en cualquier fila para ver las sesiones y asistentes únicos del área
+        </p>
+        <table class="tipo-table" id="tabla-area">
+          <thead><tr><th>Área</th><th>Sesiones</th><th>Asistentes únicos</th><th>Asistencias totales</th><th>Promedio asist/sesión</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Modal para detalles de área -->
+      <div id="area-detail-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:10000;padding:20px;overflow:auto">
+        <div style="max-width:1000px;margin:40px auto;background:white;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.15)">
+          <div style="padding:24px;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center">
+            <h3 id="area-detail-title" style="margin:0;color:var(--dk)"></h3>
+            <button onclick="document.getElementById('area-detail-modal').style.display='none'" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--dk3);line-height:1">&times;</button>
+          </div>
+          <div style="padding:24px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px">
+              <div>
+                <h4 style="color:var(--or);margin:0 0 16px 0;font-size:1.1rem">📋 Sesiones (Ordenadas por fecha)</h4>
+                <div id="area-detail-sesiones" style="max-height:400px;overflow-y:auto;background:rgba(0,0,0,.02);padding:16px;border-radius:8px"></div>
+              </div>
+              <div>
+                <h4 style="color:var(--or);margin:0 0 16px 0;font-size:1.1rem">👥 Asistentes Únicos (Ordenados alfabéticamente)</h4>
+                <div id="area-detail-asistentes" style="max-height:400px;overflow-y:auto;background:rgba(0,0,0,.02);padding:16px;border-radius:8px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="section">
@@ -792,21 +869,79 @@ body.edit-mode [contenteditable=true]:focus{outline:2px solid var(--or);backgrou
       <div class="prod-grid" id="retro-prod-cards"></div>
     </div>
 
-    <!-- Tabla de respuestas -->
-    <div class="section">
-      <div class="sec-label">Respuestas individuales</div>
-      <h2 id="retro-table-title">Encuestas Recibidas</h2>
+
+
+    <!-- ════════════ ANÁLISIS CUALITATIVO DE RETROALIMENTACIÓN ════════════ -->
+    <div class="section" id="retro-qualitative-section">
+      <div class="sec-label">Análisis cualitativo</div>
+      <h2>Clasificación de Comentarios</h2>
+      <p style="color:var(--txt-secondary);margin-bottom:22px;font-size:.93rem;line-height:1.6">
+        Cada sugerencia u observación fue clasificada por categoría, tipo de feedback y nivel de prioridad para facilitar la identificación de patrones de mejora.
+      </p>
+
+      <!-- KPIs Qualitative -->
+      <div class="diag-kpi" style="margin-bottom:28px">
+        <div class="dkpi-card"><span class="dkpi-icon">💬</span><div class="dkpi-val" id="qkpi-total">—</div><div class="dkpi-lbl">Comentarios analizados</div></div>
+        <div class="dkpi-card"><span class="dkpi-icon">📊</span><div class="dkpi-val" id="qkpi-cats">—</div><div class="dkpi-lbl">Categorías</div></div>
+        <div class="dkpi-card" style="background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-color:#66bb6a"><span class="dkpi-icon">👍</span><div class="dkpi-val" id="qkpi-positivo" style="color:#2e7d32">—</div><div class="dkpi-lbl">Positivos</div></div>
+        <div class="dkpi-card" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);border-color:#ffa726"><span class="dkpi-icon">💡</span><div class="dkpi-val" id="qkpi-sugerencia" style="color:#e65100">—</div><div class="dkpi-lbl">Sugerencias</div></div>
+        <div class="dkpi-card" style="background:linear-gradient(135deg,#fce4ec,#f8bbd0);border-color:#ef5350"><span class="dkpi-icon">⚠️</span><div class="dkpi-val" id="qkpi-critica" style="color:#c62828">—</div><div class="dkpi-lbl">Críticas</div></div>
+      </div>
+
+      <!-- Charts Row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;margin-bottom:28px">
+        <div class="chart-wrap" style="margin:0"><canvas id="chart-qual-cat"></canvas></div>
+        <div class="chart-wrap" style="margin:0"><canvas id="chart-qual-tipo"></canvas></div>
+        <div class="chart-wrap" style="margin:0"><canvas id="chart-qual-prio"></canvas></div>
+      </div>
+
+      <!-- Priority Action Items -->
+      <div id="qual-priority-section" style="margin-bottom:28px">
+        <h3 style="margin-bottom:14px;font-size:1.08rem">🔴 Sugerencias de Alta Prioridad</h3>
+        <div id="qual-priority-cards" style="display:grid;grid-template-columns:1fr;gap:12px"></div>
+      </div>
+
+      <!-- Filter controls -->
+      <div class="diag-controls" style="margin-top:18px;margin-bottom:14px">
+        <label>Filtrar por categoría:</label>
+        <select id="qual-sel-cat">
+          <option value="">Todas las categorías</option>
+        </select>
+        <label style="margin-left:14px">Tipo:</label>
+        <select id="qual-sel-tipo">
+          <option value="">Todos</option>
+          <option value="Positivo">Positivo</option>
+          <option value="Sugerencia">Sugerencia</option>
+          <option value="Crítica">Crítica</option>
+        </select>
+        <label style="margin-left:14px">Prioridad:</label>
+        <select id="qual-sel-prio">
+          <option value="">Todas</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+        </select>
+      </div>
+
+      <!-- Classified Comments Table -->
       <div class="diag-table-wrap">
-        <table class="diag-table" id="retro-table">
-          <thead id="retro-thead"></thead>
-          <tbody id="retro-tbody"></tbody>
+        <table class="diag-table" id="qual-table">
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th style="width:100px">Producto</th>
+              <th style="width:140px">Sesión</th>
+              <th>Comentario</th>
+              <th style="width:155px">Categoría</th>
+              <th style="width:160px">Subcategoría</th>
+              <th style="width:80px">Tipo</th>
+              <th style="width:70px">Prioridad</th>
+            </tr>
+          </thead>
+          <tbody id="qual-tbody"></tbody>
         </table>
       </div>
-      <div class="empty-state" id="retro-empty">
-        <span class="es-icon">⭐</span>
-        <h3>Sin datos de retroalimentación</h3>
-        <p>Accede como administrador para cargar el archivo Excel de encuestas de retroalimentación.</p>
-      </div>
+      <p id="qual-count-label" style="margin-top:10px;font-size:.83rem;color:var(--txt-secondary)"></p>
     </div>
 
     <div class="footer">
@@ -918,8 +1053,11 @@ const PAL = ['#E55E1E','#2F2F2F','#F07040','#555','#C44E14','#888','#FF8C5A','#3
 // ═══════════════════════════════
 //  ESTADO
 // ═══════════════════════════════
-let allData = null, filteredRows = null, charts = {}, adminOpen = false, editMode = false;
+let allData = null, filteredRows = null, charts = {}, adminOpen = false, editMode = false, currentMetrics = null;
 let formadoras = JSON.parse(localStorage.getItem(SK.formadoras)||'["Johana Valencia Cardona","Karolay Castaño Bedoya"]');
+
+// Mapa nombre → área (resuelve XLOOKUP que SheetJS no puede evaluar)
+const EQUIPOS_MAP = {"Alejandra Torres Henao":"Servicio al cliente Pymes + Nómina","Alexandra Maireth Villa Guerra":"Servicio al cliente Restobar","Ana Maria Acevedo Tangarife":"Éxito de cliente","Angie Paola Casallas Ortiz":"Servicio al cliente Restobar","Angie Yulieth Garcia Redondo":"Éxito de cliente","Anyela Florez Melo":"Implementación - Alojamientos","Anyi Suley Neiza Diaz":"Éxito de cliente","Brigitte Paola Rodriguez Barrios":"Servicio al cliente Restobar","Carlos Andres Gutierrez Gomez":"Éxito de cliente","Carlos Arturo Dominguez  Gomez":"Servicio al cliente Alojamientos","Caroll Yulieth Contreras Rico":"Servicio al cliente Pymes + Nómina","Cristian Alexander Pineda Socha":"Servicio al cliente Pymes + Nómina","Daniel Alberto Olier Diaz":"Servicio al cliente Restobar","Daniel David Ortega Rico":"Implementación - Pymes + Nómina","Derly Yurani Fernandez Leon":"Éxito de cliente","Diana Mileidy Bernal Yanez":"Implementación - Restobar + Pos Tienda","Diana Milena Zarate Beltran":"Servicio al cliente Restobar","Diana Patricia Diaz Ramirez":"Gestión del conocimiento","Diana Patricia Palacios Cortes":"Servicio al cliente Pymes + Nómina","Diana Rocio Rincon Joya":"Servicio al cliente Restobar","Gladis del Carmen Reyes Baron":"Implementación - Pymes + Nómina","Harold Mondragon Jaramillo":"Implementación - Restobar + Pos Tienda","Ingrys Tuberquia Lugo":"Servicio al cliente Restobar","Isabel Cristina Monsalve Velasquez":"Gestión del conocimiento","Jackeline Caldas Acero":"Servicio al cliente Pymes + Nómina","Jerónimo Junior Yaya Bolívar":"Servicio al cliente Pymes + Nómina","Jhurley Tatiana Hoyos Bustamante":"Servicio al cliente Pymes + Nómina","Joan David Zapata Rios":"Servicio al cliente Alojamientos","Juan Pablo Franco Gomez":"Implementación - Pymes + Nómina","Juan Pablo Gallego Gaona":"Servicio al cliente Restobar","Karolay Castaño Bedoya":"Gestión del conocimiento","Katherine Paola Reyes Mieles":"Gestión del conocimiento","Katteryn Portela Yanez":"Éxito de cliente","Kelly Vanessa Valencia Bedoya":"Implementación - Restobar + Pos Tienda","Kevin Andres Arrieta Reyes":"Servicio al cliente Restobar","Laura Camila Velez Rivera":"Servicio al cliente Restobar","Ledis ledesma":"Éxito de cliente","Leidy Johana Garcia Rivera":"Servicio al cliente Pymes + Nómina","Leidy Viviana Lara Montaño":"Servicio al cliente Alojamientos","Leydi Johanna Ruiz García":"Servicio al cliente Restobar","Lina Marcela Ruiz Alvarez":"Servicio al cliente Restobar","Lisseth Andrea Graciano":"Servicio al cliente Restobar","Mabel Johanna Villa Hernandez":"Servicio al cliente Pymes + Nómina","Maite Viviana Gutierrez Hernandez":"Implementación - Pymes + Nómina","Manuela Muñoz Isaza":"Servicio al cliente Restobar","Maria Enid Restrepo Restrepo":"Implementación - Restobar + Pos Tienda","Maria Jose Araque Jaramillo":"Éxito de cliente","Maria Natalia Arbelaez Valencia":"Servicio al cliente Pymes + Nómina","Mary Alejandra Hernandez Leon":"Servicio al cliente Restobar","Melanie Paola Gonzalez Rodriguez":"Servicio al cliente Pymes + Nómina","Merly Astrid Valles Daris":"Éxito de cliente","Monica Estefania Murillo Espitia":"Implementación - Pymes + Nómina","Natalia Naranjo Buitrago":"Servicio al cliente Pymes + Nómina","Nelfi Yamile Moreno Moreno":"Servicio al cliente Pymes + Nómina","Nicolás Fernando Devia Espinosa":"Servicio al cliente Alojamientos","Nilton Mariono Osorio Henao":"Éxito de cliente","Paola Andrea Caballero Pedraza":"Servicio al cliente Restobar","Pedro Julian Badillo Gomez":"Servicio al cliente Alojamientos","Santiago Gutiérrez Villada":"Satisfacción & Éxito de cliente","Sara Daniela Murillo Tangarife":"Implementación - Restobar + Pos Tienda","Sol Jhanet Quiceno Cano":"Servicio al cliente Restobar","Sulma Carolina Landinez Alvarado":"Servicio al cliente Pymes + Nómina","Yenny Lizeth Espinosa":"Servicio al cliente Restobar","Zulli Tatiana Silva Rodriguez":"Servicio al cliente Alojamientos","Johana Valencia Cardona":"Gestión del conocimiento","Eduardo Morillo Alcala":"Servicio al cliente Pymes + Nómina"};
 let prodDesc   = JSON.parse(localStorage.getItem(SK.prodDesc)||JSON.stringify(DEFAULT_PROD_DESC));
 let fCfg       = JSON.parse(localStorage.getItem(SK.fCfg)||'{"tipo":false,"producto":false,"participante":false}');
 let diagProds  = JSON.parse(localStorage.getItem(SK.diagProds)||'["Nómina","Pymes","Restobar","Alojamientos"]');
@@ -1011,6 +1149,34 @@ async function parseXLSX(buffer) {
     if (!headers.length) headers = Array.from({length:Math.max(...Object.keys(rd).map(Number))+1},(_,i)=>rd[i]||'');
     else result.push(rd);
   }
+  // Also parse Equipos sheet (sheet2) for dynamic area mapping
+  try {
+    const eqFile = files['xl/worksheets/sheet2.xml'];
+    if (eqFile) {
+      const eqMap = {};
+      let eqHeaders=[], eqRows=[];
+      for (const row of pXML(dec.decode(eqFile)).getElementsByTagNameNS(NS,'row')) {
+        const rd = {};
+        for (const cell of row.getElementsByTagNameNS(NS,'c')) {
+          const v = cell.getElementsByTagNameNS(NS,'v')[0]; if(!v) continue;
+          const idx = colIdx(cell.getAttribute('r'));
+          const t = cell.getAttribute('t');
+          const val = t==='s' ? ss[+v.textContent] : v.textContent;
+          eqHeaders.length===0 ? rd[idx]=val : (eqHeaders[idx] && (rd[eqHeaders[idx]]=val));
+        }
+        if (!eqHeaders.length) eqHeaders = Array.from({length:Math.max(...Object.keys(rd).map(Number))+1},(_,i)=>rd[i]||'');
+        else eqRows.push(rd);
+      }
+      // Build name→area map from Equipos sheet (col A=name, col B=area)
+      const nameCol = eqHeaders.find(h=>h&&/nombre/i.test(h)) || eqHeaders[0];
+      const areaCol = eqHeaders.find(h=>h&&/area|área/i.test(h)) || eqHeaders[1];
+      if (nameCol && areaCol) {
+        eqRows.forEach(r => { if(r[nameCol]&&r[areaCol]) eqMap[String(r[nameCol]).trim()]=String(r[areaCol]).trim(); });
+        Object.assign(EQUIPOS_MAP, eqMap);
+        console.log('📋 Equipos dinámico:', Object.keys(eqMap).length, 'registros');
+      }
+    }
+  } catch(e) { console.warn('No se pudo leer hoja Equipos:', e); }
   return result;
 }
 
@@ -1020,11 +1186,12 @@ async function parseXLSX(buffer) {
 function processAsistencias(rawRows) {
   const COL = {
     fecha:['Fecha de Sesión','Fecha'], sesion:['Tema / Nombre de la sesión','Sesión','Tema'],
-    asist:['Nombre del asistente','Asistente','Nombre'], tipo:['Tipo de sesión','Tipo'], producto:['Producto']
+    asist:['Nombre del asistente','Asistente','Nombre'], tipo:['Tipo de sesión','Tipo'], producto:['Producto'],
+    equipo:['Equipo','Area','Área']
   };
   const first = rawRows[0]||{};
   const fc = k => COL[k].find(a=>first[a]!==undefined)||null;
-  const C = {fecha:fc('fecha'),sesion:fc('sesion'),asist:fc('asist'),tipo:fc('tipo'),producto:fc('producto')};
+  const C = {fecha:fc('fecha'),sesion:fc('sesion'),asist:fc('asist'),tipo:fc('tipo'),producto:fc('producto'),equipo:fc('equipo')};
 
   const toMonth = v => { if(!v) return null; const n=parseFloat(v); if(!isNaN(n)&&n>40000){const d=new Date((n-25569)*86400*1000); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`} return typeof v==='string'?v.substring(0,7):null; };
   const toDateStr = v => { if(!v) return '—'; const n=parseFloat(v); if(!isNaN(n)&&n>40000){const d=new Date((n-25569)*86400*1000); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`} if(typeof v==='string'&&v.includes('-')){const p=v.substring(0,10).split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:v} return v; };
@@ -1039,6 +1206,13 @@ function processAsistencias(rawRows) {
     _prod: r[C.producto]||'Sin clasificar',
     _sesion: r[C.sesion]||'',
     _asist: r[C.asist]||'',
+    _area: (() => {
+      const name = (r[C.asist]||'').trim();
+      if (EQUIPOS_MAP[name]) return EQUIPOS_MAP[name];
+      const eqVal = C.equipo ? r[C.equipo] : null;
+      if (eqVal && typeof eqVal === 'string' && !eqVal.startsWith('=') && eqVal !== 'Otro equipo') return eqVal;
+      return 'Otro equipo';
+    })(),
     _fechaRaw: r[C.fecha]
   }));
 
@@ -1049,6 +1223,7 @@ function processAsistencias(rawRows) {
     allTipos: [...new Set(rows.map(r=>r._tipo))].sort(),
     allProds: [...new Set(rows.map(r=>r._prod))].sort(),
     allParts: [...new Set(rows.map(r=>r._asist))].sort(),
+    allAreas: [...new Set(rows.map(r=>r._area))].sort(),
     fechaInicio: fechasNum.length ? toDateStr(String(Math.min(...fechasNum))) : '—',
     fechaFin:    fechasNum.length ? toDateStr(String(Math.max(...fechasNum))) : '—',
   };
@@ -1082,9 +1257,20 @@ function calcMetrics(rows) {
   const topPart=Object.entries(partCnt).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([n,s])=>({nombre:n,sesiones:s}));
   const topSes=Object.entries(sesCnt).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([n,a])=>({nombre:n,asistentes:a}));
 
+  // Area data
+  const areaMap={};
+  rows.forEach(r=>{
+    const a=r._area||'Otro equipo';
+    if(!areaMap[a]) areaMap[a]={sesiones:new Set(),asistentes:new Set(),asistencias:0};
+    areaMap[a].sesiones.add(r._sesion);
+    areaMap[a].asistentes.add(r._asist);
+    areaMap[a].asistencias++;
+  });
+  const areaData=Object.entries(areaMap).map(([n,d])=>({nombre:n,sesiones:d.sesiones.size,asistentes:d.asistentes.size,asistencias:d.asistencias,promedio:d.sesiones.size?+((d.asistencias/d.sesiones.size).toFixed(1)):0})).sort((a,b)=>b.asistencias-a.asistencias);
+
   return {totalAsist:rows.length,participantes:partSet.size,sesionesUnicas:sesSet.size,
     promedio:sesSet.size?+(rows.length/sesSet.size).toFixed(1):0,prodUnicos:Object.keys(prodCnt).length,
-    mensualLabels:meses,mensualValues:meses.map(m=>mesMap[m]),tipoData,prodData,topPart,topSes};
+    mensualLabels:meses,mensualValues:meses.map(m=>mesMap[m]),tipoData,prodData,topPart,topSes,areaData,areaMap};
 }
 
 // ═══════════════════════════════
@@ -1102,6 +1288,7 @@ function buildFilterSelects() {
   document.getElementById('f-tipo').innerHTML = '<option value="">Todos los tipos</option>' + allData.allTipos.map(t=>`<option value="${t}">${t}</option>`).join('');
   document.getElementById('f-producto').innerHTML = '<option value="">Todos los productos</option>' + allData.allProds.map(p=>`<option value="${p}">${p}</option>`).join('');
   document.getElementById('f-participante').innerHTML = '<option value="">Todos los participantes</option>' + allData.allParts.map(p=>`<option value="${p}">${p}</option>`).join('');
+  document.getElementById('f-area').innerHTML = '<option value="">Todas las áreas</option>' + allData.allAreas.map(a=>`<option value="${a}">${a}</option>`).join('');
 }
 
 function populateMesSelects(meses) {
@@ -1122,11 +1309,11 @@ document.getElementById('f-year').addEventListener('change', () => {
   applyFilters();
 });
 
-['f-desde','f-hasta','f-tipo','f-producto','f-participante'].forEach(id =>
+['f-desde','f-hasta','f-tipo','f-producto','f-participante','f-area'].forEach(id =>
   document.getElementById(id).addEventListener('change', () => {}));  // Removido auto-apply
 
 document.getElementById('btn-clear-f').addEventListener('click', () => {
-  ['f-year','f-desde','f-hasta','f-tipo','f-producto','f-participante'].forEach(id =>
+  ['f-year','f-desde','f-hasta','f-tipo','f-producto','f-participante','f-area'].forEach(id =>
     document.getElementById(id).value='');
   if (allData) populateMesSelects(allData.allMeses);
   applyFilters();
@@ -1140,7 +1327,8 @@ function applyFilters() {
     hasta: document.getElementById('f-hasta').value,
     tipo: document.getElementById('f-tipo').value,
     producto: document.getElementById('f-producto').value,
-    participante: document.getElementById('f-participante').value
+    participante: document.getElementById('f-participante').value,
+    area: document.getElementById('f-area').value
   };
   let rows = allData.rows;
   if (f.year)    rows = rows.filter(r=>r._mes&&r._mes.startsWith(f.year));
@@ -1149,12 +1337,13 @@ function applyFilters() {
   if (f.tipo)    rows = rows.filter(r=>r._tipo===f.tipo);
   if (f.producto) rows = rows.filter(r=>r._prod===f.producto);
   if (f.participante) rows = rows.filter(r=>r._asist===f.participante);
+  if (f.area) rows = rows.filter(r=>r._area===f.area);
   filteredRows = rows;
 
   const active = Object.values(f).filter(Boolean);
   document.getElementById('f-badge').classList.toggle('on', active.length>0);
   document.getElementById('f-badge').textContent = active.length ? `${active.length} filtro${active.length>1?'s':''} activo${active.length>1?'s':''}` : '';
-  const labels=[f.year&&`Año: ${f.year}`,f.desde&&`Desde: ${f.desde}`,f.hasta&&`Hasta: ${f.hasta}`,f.tipo&&f.tipo,f.producto&&f.producto,f.participante&&f.participante].filter(Boolean);
+  const labels=[f.year&&`Año: ${f.year}`,f.desde&&`Desde: ${f.desde}`,f.hasta&&`Hasta: ${f.hasta}`,f.tipo&&f.tipo,f.producto&&f.producto,f.participante&&f.participante,f.area&&`Área: ${f.area}`].filter(Boolean);
   document.getElementById('fchip-text').textContent = labels.join(' · ');
   document.getElementById('fchip').classList.toggle('on', active.length>0);
 
@@ -1165,6 +1354,7 @@ function applyFCfg() {
   document.getElementById('f-tipo').style.display = fCfg.tipo ? '' : 'none';
   document.getElementById('f-producto').style.display = fCfg.producto ? '' : 'none';
   document.getElementById('f-participante').style.display = fCfg.participante ? '' : 'none';
+  document.getElementById('f-area').style.display = '';
   if (allData) document.getElementById('filterbar').classList.add('visible');
 }
 
@@ -1174,6 +1364,9 @@ function applyFCfg() {
 function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
 function renderAsistencias(m) {
+  // Guardar métricas globalmente para drill-down
+  currentMetrics = m;
+  
   document.getElementById('kpi-asistencias').textContent  = m.totalAsist.toLocaleString('es-CO');
   document.getElementById('kpi-participantes').textContent = m.participantes;
   document.getElementById('kpi-sesiones').textContent      = m.sesionesUnicas;
@@ -1212,7 +1405,206 @@ function renderAsistencias(m) {
   const renderRank=(ulId,items,key)=>{const ul=document.getElementById(ulId);ul.innerHTML='';const mx=items[0]?.[key]||1;items.forEach((item,i)=>{const li=document.createElement('li');const pct=Math.round(item[key]/mx*100);li.innerHTML=`<span class="rank-num ${i<3?'top3':''}">#${i+1}</span><span class="rank-name">${(item.nombre||'').substring(0,72)}</span><div class="rank-bar-wrap"><div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${pct}%"></div></div></div><span class="rank-val">${item[key]}</span>`;ul.appendChild(li);});};
   renderRank('ranking-participantes',m.topPart,'sesiones');
   renderRank('ranking-sesiones',m.topSes.map(s=>({nombre:s.nombre,sesiones:s.asistentes})),'sesiones');
+
+  // Area charts
+  dc('areaSes'); dc('areaAsist');
+  if(m.areaData && m.areaData.length){
+    const areaLabels=m.areaData.map(a=>a.nombre.length>28?a.nombre.substring(0,25)+'…':a.nombre);
+    charts.areaSes = new Chart(document.getElementById('chart-area-ses'),{type:'bar',data:{labels:areaLabels,datasets:[{label:'Sesiones',data:m.areaData.map(a=>a.sesiones),backgroundColor:PAL.slice(0,m.areaData.length),borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},title:{display:true,text:'Sesiones por Área',font:{size:13,weight:'bold'}},tooltip:{callbacks:{label:ctx=>{const d=m.areaData[ctx.dataIndex];return ` ${d.sesiones} sesiones (${d.nombre})`}}}},scales:{x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+    charts.areaAsist = new Chart(document.getElementById('chart-area-asist'),{type:'bar',data:{labels:areaLabels,datasets:[{label:'Asistentes',data:m.areaData.map(a=>a.asistentes),backgroundColor:PAL.slice(0,m.areaData.length),borderRadius:5,borderWidth:0}]},options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false},title:{display:true,text:'Asistentes Únicos por Área',font:{size:13,weight:'bold'}},tooltip:{callbacks:{label:ctx=>{const d=m.areaData[ctx.dataIndex];return ` ${d.asistentes} asistentes (${d.nombre})`}}}},scales:{x:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}},y:{grid:{display:false},ticks:{font:{size:10}}}}}});
+
+    // Area table - con filtros y drill-down
+    renderAreaTable();
+  }
 }
+
+// ═══════════════════════════════
+//  RENDERIZAR TABLA DE ÁREAS (con filtros y drill-down)
+// ═══════════════════════════════
+function renderAreaTable() {
+  const m = currentMetrics;
+  if (!m || !m.areaData || !m.areaData.length) return;
+  
+  const aTbody = document.querySelector('#tabla-area tbody');
+  aTbody.innerHTML = '';
+  
+  // Obtener áreas a ocultar
+  const hideSatisfaccion = document.getElementById('hide-satisfaccion')?.checked || false;
+  const hideConocimiento = document.getElementById('hide-conocimiento')?.checked || false;
+  
+  // Filtrar datos
+  const filteredAreas = m.areaData.filter(a => {
+    if (hideSatisfaccion && a.nombre === 'Satisfacción & Éxito de cliente') return false;
+    if (hideConocimiento && a.nombre === 'Gestión del conocimiento') return false;
+    return true;
+  });
+  
+  // Regenerar gráficos con datos filtrados
+  dc('areaSes'); dc('areaAsist');
+  if (filteredAreas.length) {
+    const areaLabels = filteredAreas.map(a => a.nombre.length > 28 ? a.nombre.substring(0, 25) + '…' : a.nombre);
+    charts.areaSes = new Chart(document.getElementById('chart-area-ses'), {
+      type: 'bar',
+      data: {
+        labels: areaLabels,
+        datasets: [{
+          label: 'Sesiones',
+          data: filteredAreas.map(a => a.sesiones),
+          backgroundColor: PAL.slice(0, filteredAreas.length),
+          borderRadius: 5,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'Sesiones por Área', font: { size: 13, weight: 'bold' } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const d = filteredAreas[ctx.dataIndex];
+                return ` ${d.sesiones} sesiones (${d.nombre})`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' } },
+          y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+    
+    charts.areaAsist = new Chart(document.getElementById('chart-area-asist'), {
+      type: 'bar',
+      data: {
+        labels: areaLabels,
+        datasets: [{
+          label: 'Asistentes',
+          data: filteredAreas.map(a => a.asistentes),
+          backgroundColor: PAL.slice(0, filteredAreas.length),
+          borderRadius: 5,
+          borderWidth: 0
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'Asistentes Únicos por Área', font: { size: 13, weight: 'bold' } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const d = filteredAreas[ctx.dataIndex];
+                return ` ${d.asistentes} asistentes (${d.nombre})`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,.05)' } },
+          y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  }
+  
+  // Generar filas de tabla con drill-down
+  filteredAreas.forEach(a => {
+    const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.style.transition = 'background 0.2s';
+    tr.onmouseenter = () => tr.style.background = 'rgba(229,94,30,.08)';
+    tr.onmouseleave = () => tr.style.background = '';
+    tr.onclick = () => showAreaDetail(a.nombre);
+    tr.innerHTML = `
+      <td><strong>${a.nombre}</strong></td>
+      <td>${a.sesiones}</td>
+      <td>${a.asistentes}</td>
+      <td>${a.asistencias.toLocaleString('es-CO')}</td>
+      <td>${a.promedio}</td>
+    `;
+    aTbody.appendChild(tr);
+  });
+}
+
+// ═══════════════════════════════
+//  MOSTRAR DETALLE DE ÁREA
+// ═══════════════════════════════
+function showAreaDetail(areaNombre) {
+  const m = currentMetrics;
+  if (!m || !m.areaMap || !m.areaMap[areaNombre]) return;
+  
+  const area = m.areaMap[areaNombre];
+  const modal = document.getElementById('area-detail-modal');
+  const title = document.getElementById('area-detail-title');
+  const sesionesDiv = document.getElementById('area-detail-sesiones');
+  const asistentesDiv = document.getElementById('area-detail-asistentes');
+  
+  title.textContent = `Detalle: ${areaNombre}`;
+  
+  // Obtener sesiones ordenadas por fecha
+  const sesionesArray = Array.from(area.sesiones);
+  // Buscar info adicional de cada sesión
+  const sesionesConInfo = sesionesArray.map(sesNombre => {
+    const row = filteredRows.find(r => r._sesion === sesNombre);
+    return {
+      nombre: sesNombre,
+      fecha: row ? row._fecha : null,
+      producto: row ? row._prod : null,
+      tipo: row ? row._tipo : null
+    };
+  }).sort((a, b) => {
+    if (!a.fecha || !b.fecha) return 0;
+    return b.fecha.localeCompare(a.fecha);
+  });
+  
+  sesionesDiv.innerHTML = sesionesConInfo.map((s, i) => `
+    <div style="padding:10px;margin-bottom:8px;background:white;border-radius:6px;border-left:3px solid var(--or)">
+      <div style="font-weight:600;color:var(--dk);margin-bottom:4px">${i + 1}. ${s.nombre}</div>
+      ${s.fecha ? `<div style="font-size:.85rem;color:var(--dk3)">📅 ${s.fecha}</div>` : ''}
+      ${s.producto ? `<div style="font-size:.85rem;color:var(--dk3)">📦 ${s.producto}</div>` : ''}
+      ${s.tipo ? `<div style="font-size:.85rem;color:var(--dk3)">🏷️ ${s.tipo}</div>` : ''}
+    </div>
+  `).join('');
+  
+  // Asistentes únicos ordenados alfabéticamente
+  const asistentesArray = Array.from(area.asistentes).sort();
+  asistentesDiv.innerHTML = asistentesArray.map((nombre, i) => `
+    <div style="padding:8px;margin-bottom:6px;background:white;border-radius:6px">
+      <span style="color:var(--dk3);margin-right:8px">${i + 1}.</span>
+      <span style="color:var(--dk);font-weight:500">${nombre}</span>
+    </div>
+  `).join('');
+  
+  modal.style.display = 'block';
+}
+
+// Event listeners para filtros de área
+document.addEventListener('DOMContentLoaded', () => {
+  const hideSat = document.getElementById('hide-satisfaccion');
+  const hideKnow = document.getElementById('hide-conocimiento');
+  
+  if (hideSat) hideSat.addEventListener('change', renderAreaTable);
+  if (hideKnow) hideKnow.addEventListener('change', renderAreaTable);
+  
+  // Cerrar modal con ESC
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.getElementById('area-detail-modal').style.display = 'none';
+    }
+  });
+  
+  // Cerrar modal al hacer clic fuera
+  document.getElementById('area-detail-modal')?.addEventListener('click', e => {
+    if (e.target.id === 'area-detail-modal') {
+      e.target.style.display = 'none';
+    }
+  });
+});
 
 // ═══════════════════════════════
 //  CARGA ASISTENCIAS
@@ -1921,11 +2313,18 @@ window.testDiagnostico = function(producto) {
   if(savedRows){
     try{
       const rows=JSON.parse(savedRows);
+      rows.forEach(r=>{
+        if(!r._area || r._area==='Otro equipo') {
+          const name = (r._asist||'').trim();
+          r._area = EQUIPOS_MAP[name] || 'Otro equipo';
+        }
+      });
       allData={rows,
         allMeses:[...new Set(rows.map(r=>r._mes).filter(Boolean))].sort(),
         allTipos:[...new Set(rows.map(r=>r._tipo))].sort(),
         allProds:[...new Set(rows.map(r=>r._prod))].sort(),
         allParts:[...new Set(rows.map(r=>r._asist))].sort(),
+        allAreas:[...new Set(rows.map(r=>r._area))].sort(),
         fechaInicio:'—',fechaFin:'—'
       };
       const nums=rows.map(r=>parseFloat(r._fechaRaw||0)).filter(n=>!isNaN(n)&&n>40000);
@@ -2166,5 +2565,200 @@ document.getElementById('file-thinkific').addEventListener('change', async e => 
 
 })();
 </script>
+
+<script>
+(function() {
+  const qualData = [{"id": "1", "producto": "Nómina", "sesion": "Cálculo de horas extras y recargos", "comentario": "Las sesiones hasta el momento son muy productivas, son espacios en los que se aprende bastante ya que no solo se da una teoría sino que a la vez se hace el ejercicio practico lo cual ayuda a comprender mucho mejor el tema que se esta tratando, así mismo el espacio permite que se resuelvan las dudas que se tenga del tema. Felicitaciones!", "categoria": "Metodología de enseñanza", "subcategoria": "Valoración de práctica y teoría combinadas", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "2", "producto": "Nómina", "sesion": "Cálculo de horas extras y recargos", "comentario": "Por ahora ninguna.", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "3", "producto": "Nómina", "sesion": "Cálculo de horas extras y recargos", "comentario": "no hay ninguna sugerencia, Johana explica muy bien y es muy clara con sus talleres", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "7", "producto": "Integración Restobar - Pymes", "sesion": "Sesión practica Integración Loggro Restobar - Pymes", "comentario": "que se sigan realizando este tipo de capacitaciones interactivas y participativas", "categoria": "Duración o formato de la sesión", "subcategoria": "Continuidad de capacitaciones interactivas", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "8", "producto": "Integración Restobar - Pymes", "sesion": "Sesión practica Integración Loggro Restobar - Pymes", "comentario": ".", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "9", "producto": "Integración Restobar - Pymes", "sesion": "Sesión practica Integración Loggro Restobar - Pymes", "comentario": "No desmejoren la excelente calidad con que se hacen actualmente las capacitaciones", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Mantener calidad actual", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "10", "producto": "Integración Restobar - Pymes", "sesion": "Sesión practica Integración Loggro Restobar - Pymes", "comentario": "Me parece muy bueno que se realicen este tipo de ejercicios en vivo para que entre ambos equipos podamos encontrar la solución y aprender en conjunto sobre los productos.", "categoria": "Metodología de enseñanza", "subcategoria": "Ejercicios prácticos en equipo", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "11", "producto": "Integración Restobar - Pymes", "sesion": "Sesión practica Integración Loggro Restobar - Pymes", "comentario": "Mi sugerencia es seguir realizando este tipo de encuentros, sin importar que algunos no tengamos conocimiento en PYMES y otros en RestoBar. Al unirnos, todos tenemos la oportunidad de compartir conocimientos y aprender en conjunto.", "categoria": "Metodología de enseñanza", "subcategoria": "Aprendizaje colaborativo entre equipos", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "12", "producto": "Integración Restobar - Pymes", "sesion": "Sesión practica Integración Loggro Restobar - Pymes", "comentario": "Excelente la forma en la que se esta haciendo, tal vez, promover mas espacios asi para socializar errores que personas de soporte han visualizado y como se les da tratamiento en base a sus experiencias.", "categoria": "Contenido de la capacitación", "subcategoria": "Socialización de errores y experiencias", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "13", "producto": "Integración Restobar - Pymes", "sesion": "Sesión practica Integración Loggro Restobar - Pymes", "comentario": "Excelente capacitación por mi parte quede muy satisfecha , logre solucionar dudas y conocer más el ambiente de restobar", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción con resolución de dudas", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "14", "producto": "Nómina", "sesion": "Pago de Nómina desde Diferentes Cuentas Bancarias", "comentario": "", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "15", "producto": "Nómina", "sesion": "Pago de Nómina desde Diferentes Cuentas Bancarias", "comentario": "Hasta el momento han sido muy específicas y son de gran ayuda para nuestra labor del día a día, muchas gracias.", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Utilidad para labor diaria", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "16", "producto": "Nómina", "sesion": "Pago de Nómina desde Diferentes Cuentas Bancarias", "comentario": "Toda la explicación es excelente", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Elogio a la explicación", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "17", "producto": "Nómina", "sesion": "Pago de Nómina desde Diferentes Cuentas Bancarias", "comentario": "na", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "18", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "Todo excelente", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "19", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "Las sesiones con Johana son muy productivas, su entendimiento y manejo del tema nos dan seguridad, las dudas se resuelven de manera muy sencilla, siempre está presta para explicar aun así cuando sea algo que haya expuesto previamente.", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Elogio a la formadora", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "20", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "todo a sido claro y ayuda mucho al conocimiento, solo que para la prueba de nomina, deberían dar mas tiempo.", "categoria": "Duración o formato de la sesión", "subcategoria": "Más tiempo para pruebas/talleres", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "21", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "Todo super bien.", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "22", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "Las capacitaciones son claras y nos resuelven dudas y a veces se ven temas que en realidad desconocemos.\n Personalmente, pienso a veces que son muchas preguntas en los talleres, de resto está perfecto que nos realicen este tipo de capacitaciones por que nos ayudan mucho a mejorar y en conocimiento", "categoria": "Metodología de enseñanza", "subcategoria": "Reducir cantidad de preguntas en talleres", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "23", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "El mecanismo que se utiliza es el apropiado, explicación clara, sencilla y completa junto con la demostración en el sistema y luego el taller de refuerzo.", "categoria": "Metodología de enseñanza", "subcategoria": "Valoración de metodología teoría + práctica", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "24", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "Me pareció excelente, ya que no sabía que por archivo plano se podía agregar manualmente las columnas y así subir ítems con más de 2 atributos", "categoria": "Contenido de la capacitación", "subcategoria": "Aprendizaje de funcionalidades nuevas", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "25", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "Que no se desmejore la calidad de las capacitaciones", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Mantener calidad actual", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "26", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "Sugiero que se envíe un resumen con los cambios o actualizaciones más relevantes después de cada reentrenamiento. y que puedan resolver el problema con el orden de los atributos al importar.", "categoria": "Material de apoyo", "subcategoria": "Resumen post-capacitación y corrección de bug", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "27", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "Hacer Varios ejemplos", "categoria": "Contenido de la capacitación", "subcategoria": "Más ejemplos prácticos", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "28", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "La plantilla de importación de ítems en la parte de la descripcion de los items hijos se disperso, no se carga ordenadamente y toca modificar desde lista de item, seria util corregir esta funcionalidad.", "categoria": "Otros", "subcategoria": "Bug en plantilla de importación de ítems", "tipo_feedback": "Crítica", "prioridad": "Alta"}, {"id": "29", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "Pienso que la metodologia que se ha venido trabajando me ha parecido excelente, el combinar la teoria y luego ver desde la plataforma el uso permite apropiar mucho mejor el conocimiento; ademas de que es un espacio en el que se permite resolver cualquier inquietud que se tenga.", "categoria": "Metodología de enseñanza", "subcategoria": "Valoración de metodología teoría + práctica", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "30", "producto": "Pymes", "sesion": "Ítems con Atributos", "comentario": "para mi las capacitaciones son excelentes, pero debido a la cantidad de trabajo que se tienen en el area de Diagnostico, me he visto un poco afectada ya que el tiempo dedicado a las capacitaciones o a los talleres me atrasan demasido y me ha tocado dedicar tiempo al trabajo despues de terminar mi jornada laboral, de pronto podria ser por lo menos 1 en la semana o en tiempos criticos como quincenas no se den dos capacitaciones, pero me parecen excelente las capacitaciones.", "categoria": "Duración o formato de la sesión", "subcategoria": "Reducir frecuencia en épocas de alta carga", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "31", "producto": "Integración Restobar - Pymes", "sesion": "Segunda sesión práctica integración Restobar - Pymes", "comentario": "Muy buenas las capacitaciones asi interactivas", "categoria": "Metodología de enseñanza", "subcategoria": "Valoración de sesiones interactivas", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "32", "producto": "Integración Restobar - Pymes", "sesion": "Segunda sesión práctica integración Restobar - Pymes", "comentario": "ninguna", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "33", "producto": "Integración Restobar - Pymes", "sesion": "Segunda sesión práctica integración Restobar - Pymes", "comentario": "Así como estamos conociendo los diferentes errores entre pymes y restobar, también es importante incluir partes prácticas con integraciones externas, por ejemplo, con sistemas como Siigo.\n Ya que nos ayudaría a identificar y hacer practica de dichos errores.\n Gracias :)", "categoria": "Contenido de la capacitación", "subcategoria": "Incluir integraciones externas (ej. Siigo)", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "34", "producto": "Integración Restobar - Pymes", "sesion": "Segunda sesión práctica integración Restobar - Pymes", "comentario": "Mas secciones practicas", "categoria": "Metodología de enseñanza", "subcategoria": "Más sesiones prácticas", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "35", "producto": "Integración Restobar - Pymes", "sesion": "Segunda sesión práctica integración Restobar - Pymes", "comentario": "Que sigan realizándose de la manera práctica", "categoria": "Metodología de enseñanza", "subcategoria": "Continuidad del enfoque práctico", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "36", "producto": "Integración Restobar - Pymes", "sesion": "Segunda sesión práctica integración Restobar - Pymes", "comentario": "Más sesión así interactivas", "categoria": "Metodología de enseñanza", "subcategoria": "Más sesiones interactivas", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "37", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "Todo super", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "38", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "No tengo ninguna sugerencia, todas son muy buenas", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "39", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "ninguna sugerencia, todo es claro y enriquecedor para el conocimiento", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "40", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "Ninguna, excelente las capacitaciones , son muy completas.", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "41", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "Ninguna", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "42", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": ".", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "43", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "El manejo que se esta llevando a cabo en la sesiones ha sido muy fructifero. Excelente.", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sesiones productivas", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "44", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "Ninguna todo es muy claro", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "45", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "Todo muy bien", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "46", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "ninguna hasta el momento", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "47", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "Me parece que la dinámica esta muy bien planteada, entre la teoría y el ejercicio practico, siento que se avanza y se aplica realmente el conocimiento, con la formadora se siente dominio del tema y fluidez del contenido, no tendría una sugerencia para ella", "categoria": "Metodología de enseñanza", "subcategoria": "Valoración de metodología teoría + práctica", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "48", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "Me gusto ya que es un tema que ingresa mucho para clientes como las droguerias", "categoria": "Contenido de la capacitación", "subcategoria": "Relevancia del tema para clientes", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "49", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": ".", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "50", "producto": "Pymes", "sesion": "Ítems con Lotes", "comentario": "Con respecto a como se tratan los temas ninguno, pero sí me gustaría sugerir una capacitación un poco más puntual con el manejo de los contratos de los aprendices del SENA con todos los cambios realizados conforme a las resoluciones emitidas", "categoria": "Contenido de la capacitación", "subcategoria": "Capacitación sobre contratos aprendices SENA", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "51", "producto": "Pymes", "sesion": "Dashboard", "comentario": "Todo muy bien", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "52", "producto": "Pymes", "sesion": "Dashboard", "comentario": "Todo super claro.", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "53", "producto": "Pymes", "sesion": "Dashboard", "comentario": "Ninguna", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "54", "producto": "Pymes", "sesion": "Dashboard", "comentario": "Todo ok", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "55", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": "Ninguna", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "56", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": ".", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "57", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": "Ninguna", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "58", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": ".", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "59", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": "No", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "60", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": "Todo muy claro.", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "61", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": "Realmente muy buenas sus capacitaciones", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Elogio general a capacitaciones", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "62", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": "Asi me parece perfecto", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "63", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": "me parece que la formadora tiene un buen dominio de los temas", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Elogio a la formadora", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "64", "producto": "Pymes", "sesion": "Facturación Recurrente y Ventas tipo Exportación", "comentario": "NA, muchas gracias por tu gran disposicion y ayuda", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Agradecimiento por disposición y ayuda", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "65", "producto": "Generales", "sesion": "Loggro Admin - Alojamientos", "comentario": "NInguna", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "66", "producto": "Generales", "sesion": "Loggro Admin - Alojamientos", "comentario": "Muy buenas estas sesiones de capacitación, como sugerencia que fueran más constantes. Muchas gracias.", "categoria": "Duración o formato de la sesión", "subcategoria": "Mayor frecuencia de sesiones", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "67", "producto": "Generales", "sesion": "Loggro Admin - Alojamientos", "comentario": "Ninguna, hasta el momento todo muy bien", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "68", "producto": "Nómina", "sesion": "Calculo de retención en la fuente sobre salario", "comentario": "", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "69", "producto": "Nómina", "sesion": "Calculo de retención en la fuente sobre salario", "comentario": "Que estos espacios de ejercicios prácticos como prima, cesantías, vacaciones, intereses y retención en la fuente sean más seguidos", "categoria": "Duración o formato de la sesión", "subcategoria": "Mayor frecuencia de ejercicios prácticos", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "70", "producto": "Nómina", "sesion": "Calculo de retención en la fuente sobre salario", "comentario": "mas sesiones practicas ya que estas ayudan mucho para retener procesos \n muchas gracias", "categoria": "Metodología de enseñanza", "subcategoria": "Más sesiones prácticas", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "71", "producto": "Nómina", "sesion": "Calculo de retención en la fuente sobre salario", "comentario": "tomar ejercicios reales, de una empresa", "categoria": "Contenido de la capacitación", "subcategoria": "Usar ejercicios con datos reales", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "72", "producto": "Nómina", "sesion": "Calculo de retención en la fuente sobre salario", "comentario": "Excelente sesión practica, es muy bueno realizar estas sesiones continuamente ya que puede haber casos muy puntuales que se pueden resolver en grupo", "categoria": "Duración o formato de la sesión", "subcategoria": "Mayor frecuencia de sesiones prácticas", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "73", "producto": "Nómina", "sesion": "Calculo de retención en la fuente sobre salario", "comentario": "todo ha sido claro, estas sesiones son enriquecedoras seria bueno tener mas sesiones de retención para aprender mas del manejo", "categoria": "Duración o formato de la sesión", "subcategoria": "Más sesiones de retención", "tipo_feedback": "Sugerencia", "prioridad": "Media"}, {"id": "74", "producto": "Nómina", "sesion": "Calculo de retención en la fuente sobre salario", "comentario": "me gusto el ejercicio así esta excelente", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción con el ejercicio", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "75", "producto": "Integración Pymes - Alojamientos", "sesion": "Capacitación de Integración Loggro Pymes - Alojamientos", "comentario": "Seguir bajo esta misma metodologia permite apropiarnos mas del funcionamiento del sistema", "categoria": "Metodología de enseñanza", "subcategoria": "Continuidad de la metodología actual", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "76", "producto": "Integración Pymes - Alojamientos", "sesion": "Capacitación de Integración Loggro Pymes - Alojamientos", "comentario": "Realizar estas sesiones de reentrenamiento periódicamente para tocar temas que no manejamos diariamente y que necesitamos mantener presente", "categoria": "Duración o formato de la sesión", "subcategoria": "Mayor frecuencia de reentrenamientos", "tipo_feedback": "Sugerencia", "prioridad": "Alta"}, {"id": "77", "producto": "Integración Pymes - Alojamientos", "sesion": "Capacitación de Integración Loggro Pymes - Alojamientos", "comentario": "na", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "78", "producto": "Integración Pymes - Alojamientos", "sesion": "Capacitación de Integración Loggro Pymes - Alojamientos", "comentario": "Ninguna", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "79", "producto": "Integración Pymes - Alojamientos", "sesion": "Capacitación de Integración Loggro Pymes - Alojamientos", "comentario": ".", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Sin sugerencia", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "80", "producto": "Integración Pymes - Alojamientos", "sesion": "Capacitación de Integración Loggro Pymes - Alojamientos", "comentario": "me gusto la capacitacion ya que quedo super claro los procesos de integración en pymes y alojamientos", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Claridad en procesos de integración", "tipo_feedback": "Positivo", "prioridad": "Baja"}, {"id": "81", "producto": "Integración Pymes - Alojamientos", "sesion": "Capacitación de Integración Loggro Pymes - Alojamientos", "comentario": "por el momento no hay sugerencias de mejora, todo a sido claro y ayuda mucho a tener mas conocimiento del sistema", "categoria": "Feedback positivo / sin sugerencias", "subcategoria": "Satisfacción general", "tipo_feedback": "Positivo", "prioridad": "Baja"}];
+
+  // --- KPIs ---
+  const totalComments = qualData.length;
+  const cats = [...new Set(qualData.map(d => d.categoria))];
+  const positivos = qualData.filter(d => d.tipo_feedback === 'Positivo').length;
+  const sugerencias = qualData.filter(d => d.tipo_feedback === 'Sugerencia').length;
+  const criticas = qualData.filter(d => d.tipo_feedback === 'Crítica').length;
+
+  const setT = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  setT('qkpi-total', totalComments);
+  setT('qkpi-cats', cats.length);
+  setT('qkpi-positivo', positivos);
+  setT('qkpi-sugerencia', sugerencias);
+  setT('qkpi-critica', criticas);
+
+  // --- Populate category filter ---
+  const selCat = document.getElementById('qual-sel-cat');
+  cats.sort().forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    selCat.appendChild(o);
+  });
+
+  // --- Charts ---
+  function countBy(arr, key) {
+    const m = {};
+    arr.forEach(d => { m[d[key]] = (m[d[key]]||0) + 1; });
+    return m;
+  }
+
+  const catColors = {
+    'Feedback positivo / sin sugerencias': '#66bb6a',
+    'Metodología de enseñanza': '#42a5f5',
+    'Duración o formato de la sesión': '#ffa726',
+    'Contenido de la capacitación': '#ab47bc',
+    'Material de apoyo': '#26c6da',
+    'Otros': '#ef5350'
+  };
+  const tipoColors = { 'Positivo': '#66bb6a', 'Sugerencia': '#ffa726', 'Crítica': '#ef5350' };
+  const prioColors = { 'Alta': '#ef5350', 'Media': '#ffa726', 'Baja': '#66bb6a' };
+
+  // Chart 1: By Category (Doughnut)
+  const catCounts = countBy(qualData, 'categoria');
+  const catLabelsShort = {
+    'Feedback positivo / sin sugerencias': 'Positivo/Sin sug.',
+    'Metodología de enseñanza': 'Metodología',
+    'Duración o formato de la sesión': 'Duración/Formato',
+    'Contenido de la capacitación': 'Contenido',
+    'Material de apoyo': 'Material apoyo',
+    'Otros': 'Otros'
+  };
+  new Chart(document.getElementById('chart-qual-cat'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(catCounts).map(k => catLabelsShort[k] || k),
+      datasets: [{
+        data: Object.values(catCounts),
+        backgroundColor: Object.keys(catCounts).map(k => catColors[k] || '#bbb'),
+        borderWidth: 2, borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: { display: true, text: 'Por Categoría', font: { size: 13 } },
+        legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } }
+      }
+    }
+  });
+
+  // Chart 2: By Tipo (Pie)
+  const tipoCounts = countBy(qualData, 'tipo_feedback');
+  new Chart(document.getElementById('chart-qual-tipo'), {
+    type: 'pie',
+    data: {
+      labels: Object.keys(tipoCounts),
+      datasets: [{
+        data: Object.values(tipoCounts),
+        backgroundColor: Object.keys(tipoCounts).map(k => tipoColors[k] || '#bbb'),
+        borderWidth: 2, borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        title: { display: true, text: 'Tipo de Feedback', font: { size: 13 } },
+        legend: { position: 'bottom', labels: { font: { size: 11 } } }
+      }
+    }
+  });
+
+  // Chart 3: By Priority (Bar horizontal)
+  const prioCounts = countBy(qualData, 'prioridad');
+  const prioOrder = ['Alta', 'Media', 'Baja'];
+  new Chart(document.getElementById('chart-qual-prio'), {
+    type: 'bar',
+    data: {
+      labels: prioOrder,
+      datasets: [{
+        label: 'Comentarios',
+        data: prioOrder.map(p => prioCounts[p] || 0),
+        backgroundColor: prioOrder.map(p => prioColors[p]),
+        borderRadius: 6, borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        title: { display: true, text: 'Prioridad', font: { size: 13 } },
+        legend: { display: false }
+      },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 5 } }
+      }
+    }
+  });
+
+  // --- Priority cards ---
+  const highPrio = qualData.filter(d => d.prioridad === 'Alta' && d.tipo_feedback !== 'Positivo');
+  const prioContainer = document.getElementById('qual-priority-cards');
+  if (highPrio.length === 0) {
+    prioContainer.innerHTML = '<p style="color:var(--txt-secondary)">No hay sugerencias de alta prioridad.</p>';
+  } else {
+    highPrio.forEach(d => {
+      const tipoBadge = d.tipo_feedback === 'Crítica'
+        ? '<span style="background:#ef5350;color:#fff;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:600">Crítica</span>'
+        : '<span style="background:#ffa726;color:#fff;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:600">Sugerencia</span>';
+      const card = document.createElement('div');
+      card.style.cssText = 'background:#fff;border:1px solid #e0e0e0;border-left:4px solid #ef5350;border-radius:8px;padding:14px 18px;';
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-weight:600;font-size:.85rem;color:#555">${d.producto} · ${d.sesion}</span>
+          <div>${tipoBadge} <span style="background:#e8eaf6;color:#3949ab;padding:2px 8px;border-radius:10px;font-size:.75rem;font-weight:600;margin-left:4px">${d.categoria}</span></div>
+        </div>
+        <p style="margin:0;font-size:.9rem;line-height:1.5;color:#333">"${d.comentario}"</p>
+        <p style="margin:6px 0 0;font-size:.78rem;color:#888">Subcategoría: ${d.subcategoria}</p>
+      `;
+      prioContainer.appendChild(card);
+    });
+  }
+
+  // --- Table rendering ---
+  function renderTable(filtered) {
+    const tbody = document.getElementById('qual-tbody');
+    tbody.innerHTML = '';
+    filtered.forEach(d => {
+      const tipoCls = d.tipo_feedback === 'Positivo' ? 'color:#2e7d32;background:#e8f5e9'
+        : d.tipo_feedback === 'Sugerencia' ? 'color:#e65100;background:#fff3e0'
+        : 'color:#c62828;background:#fce4ec';
+      const prioCls = d.prioridad === 'Alta' ? 'color:#c62828;background:#fce4ec;font-weight:700'
+        : d.prioridad === 'Media' ? 'color:#e65100;background:#fff3e0;font-weight:600'
+        : 'color:#2e7d32;background:#e8f5e9';
+      const comentarioDisplay = (!d.comentario || d.comentario === '.' || d.comentario.toLowerCase() === 'nan')
+        ? '<em style="color:#aaa">Sin comentario</em>' : d.comentario;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="text-align:center;font-size:.8rem;color:#888">${d.id}</td>
+        <td style="font-size:.82rem">${d.producto}</td>
+        <td style="font-size:.82rem">${d.sesion}</td>
+        <td style="font-size:.85rem;line-height:1.5;max-width:350px">${comentarioDisplay}</td>
+        <td style="font-size:.8rem">${d.categoria}</td>
+        <td style="font-size:.8rem;color:#555">${d.subcategoria}</td>
+        <td style="text-align:center"><span style="padding:2px 8px;border-radius:10px;font-size:.75rem;${tipoCls}">${d.tipo_feedback}</span></td>
+        <td style="text-align:center"><span style="padding:2px 8px;border-radius:10px;font-size:.75rem;${prioCls}">${d.prioridad}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('qual-count-label').textContent = `Mostrando ${filtered.length} de ${qualData.length} comentarios`;
+  }
+
+  function applyFilters() {
+    const cat = document.getElementById('qual-sel-cat').value;
+    const tipo = document.getElementById('qual-sel-tipo').value;
+    const prio = document.getElementById('qual-sel-prio').value;
+    let filtered = qualData;
+    if (cat) filtered = filtered.filter(d => d.categoria === cat);
+    if (tipo) filtered = filtered.filter(d => d.tipo_feedback === tipo);
+    if (prio) filtered = filtered.filter(d => d.prioridad === prio);
+    renderTable(filtered);
+  }
+
+  document.getElementById('qual-sel-cat').addEventListener('change', applyFilters);
+  document.getElementById('qual-sel-tipo').addEventListener('change', applyFilters);
+  document.getElementById('qual-sel-prio').addEventListener('change', applyFilters);
+
+  // Initial render
+  renderTable(qualData);
+})();
+</script>
+
 </body>
 </html>
